@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fetchDB } from '../services/api';
 
 const Sidebar = ({ activeTab, onTabChange, onLogout, isOpen, onClose, onSelectPatient }) => {
   const [showQuickModal, setShowQuickModal] = useState(false);
@@ -16,8 +17,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, isOpen, onClose, onSelectPa
   const handleNewSessionClick = async () => {
     setLoadingPts(true);
     try {
-      const res = await fetch('/api/data');
-      const db = await res.json();
+      const db = await fetchDB();
       const pts = db.patients || [];
       setPatients(pts);
       setSelectedPt(pts[0]?.id || '');
@@ -100,7 +100,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, isOpen, onClose, onSelectPa
         <div className="modal-overlay" onClick={() => setShowQuickModal(false)} style={{zIndex: 300}}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚡ Nova Sessão Rápida</h3>
+              <h3>Nova Sessão Rápida</h3>
               <button className="icon-btn" onClick={() => setShowQuickModal(false)}>
                 <span className="material-symbols-outlined">close</span>
               </button>

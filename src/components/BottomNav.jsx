@@ -56,7 +56,7 @@ const BottomNav = ({ activeTab, onTabChange, onSelectPatient }) => {
         <div className="modal-overlay" onClick={() => setShowQuickModal(false)} style={{ zIndex: 400 }}>
           <div className="modal-content mobile-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚡ Nova Sessão</h3>
+              <h3>Nova Sessão</h3>
               <button className="icon-btn" onClick={() => setShowQuickModal(false)}>
                 <span className="material-symbols-outlined">close</span>
               </button>

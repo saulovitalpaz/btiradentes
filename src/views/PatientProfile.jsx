@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchDB, addSession, deletePatient } from '../services/api';
+import { fetchDB, addSession, deletePatient, uploadSessionFile } from '../services/api';
 import BodyDiagram from '../components/BodyDiagram';
 import useIsMobile from '../hooks/useIsMobile';
 
@@ -92,14 +92,11 @@ const PatientProfile = ({ patientId, onBack }) => {
   const uploadFilesToServer = async (files) => {
     const uploaded = [];
     for (const file of files) {
-      const formData = new FormData();
-      formData.append('file', file);
       try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success) uploaded.push({ filename: data.filename, url: data.url, name: file.name, type: file.type });
+        uploaded.push(await uploadSessionFile(file));
       } catch (err) {
         console.error('Upload failed for', file.name, err);
+        throw new Error(`Falha ao enviar ${file.name}. Tente novamente.`);
       }
     }
     return uploaded;
@@ -113,8 +110,14 @@ const PatientProfile = ({ patientId, onBack }) => {
     }
     setSaving(true);
 
-    // Upload any pending files
-    const attachments = uploadFiles.length > 0 ? await uploadFilesToServer(uploadFiles) : [];
+    let attachments = [];
+    try {
+      attachments = uploadFiles.length > 0 ? await uploadFilesToServer(uploadFiles) : [];
+    } catch (error) {
+      setSaving(false);
+      alert(error.message);
+      return;
+    }
 
     const newSess = await addSession({
       patientId,
@@ -140,7 +143,7 @@ const PatientProfile = ({ patientId, onBack }) => {
     setProximaSessao(''); setBodyRegions([]);
     setUploadFiles([]); setUploadPreviews([]);
     setSaving(false);
-    alert('✅ Sessão registrada com sucesso!');
+    alert('Sessão registrada com sucesso!');
     if (isMobile) setMobileTab('history');
   };
 
@@ -150,7 +153,7 @@ const PatientProfile = ({ patientId, onBack }) => {
   if (loading) return <div className="patient-profile"><p>Carregando perfil...</p></div>;
   if (!patient) return <div className="patient-profile"><p>Paciente não encontrado.</p><button onClick={onBack}>Voltar</button></div>;
 
-  const ProfileHeader = () => (
+  const renderProfileHeader = () => (
     <header className="profile-header">
       <div className="patient-photo" style={{width: isMobile ? 80 : 200, height: isMobile ? 80 : 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-container)', borderRadius: 'var(--radius-default)'}}>
         <span className="material-symbols-outlined pet-icon" style={{fontSize: isMobile ? 32 : 64}}>pets</span>
@@ -210,7 +213,7 @@ const PatientProfile = ({ patientId, onBack }) => {
     </header>
   );
 
-  const EvolutionChart = () => (
+  const renderEvolutionChart = () => (
     <div className="chart-card">
       <div className="section-header">
         <h3>Gráfico de Evolução</h3>
@@ -240,7 +243,7 @@ const PatientProfile = ({ patientId, onBack }) => {
     </div>
   );
 
-  const SessionForm = () => (
+  const renderSessionForm = () => (
     <aside className="new-session-form" style={{ width: '100%', maxWidth: 'none' }}>
       <div className="form-header">
         <h3>Nova Sessão</h3>
@@ -363,13 +366,13 @@ const PatientProfile = ({ patientId, onBack }) => {
         </div>
 
         <button type="submit" className="btn-submit" disabled={saving} style={{cursor: saving ? 'not-allowed' : 'pointer'}}>
-          {saving ? 'Salvando...' : '✅ Finalizar e Salvar Sessão'}
+          {saving ? 'Salvando...' : 'Finalizar e Salvar Sessão'}
         </button>
       </form>
     </aside>
   );
 
-  const SessionHistory = () => (
+  const renderSessionHistory = () => (
     <div className="history-list">
       <h3 style={{ marginBottom: '16px' }}>Histórico de Sessões</h3>
       {history.length === 0 ? (
@@ -418,7 +421,7 @@ const PatientProfile = ({ patientId, onBack }) => {
           <button onClick={handleDelete} style={{ color: '#d32f2f', background:'none', border:'none', fontSize:'0.75rem', fontWeight:700 }}>EXCLUIR</button>
         </div>
 
-        <ProfileHeader />
+        {renderProfileHeader()}
 
         <div className="mobile-tabs" style={{ display: 'flex', borderBottom: '1px solid var(--outline-variant)', margin: '16px -12px', sticky: 'top', top: 0, backgroundColor: 'var(--surface)', zIndex: 10 }}>
           {['summary', 'history', 'new'].map(tab => (
@@ -446,11 +449,11 @@ const PatientProfile = ({ patientId, onBack }) => {
                 <div className="info-card"><span className="material-symbols-outlined">pets</span><div><p className="meta-label">Espécie</p><p className="meta-value">{patient.species || '—'}</p></div></div>
                 <div className="info-card"><span className="material-symbols-outlined">scale</span><div><p className="meta-label">Peso (últ.)</p><p className="meta-value">{peso ? `${peso}kg` : '—'}</p></div></div>
               </div>
-              <EvolutionChart />
+              {renderEvolutionChart()}
             </div>
           )}
-          {mobileTab === 'history' && <SessionHistory />}
-          {mobileTab === 'new' && <SessionForm />}
+          {mobileTab === 'history' && renderSessionHistory()}
+          {mobileTab === 'new' && renderSessionForm()}
         </div>
       </div>
     );
@@ -458,13 +461,13 @@ const PatientProfile = ({ patientId, onBack }) => {
 
   return (
     <div className="patient-profile desktop-view">
-      <ProfileHeader />
+      {renderProfileHeader()}
       <section className="profile-content">
         <div className="history-section">
-          <EvolutionChart />
-          <SessionHistory />
+          {renderEvolutionChart()}
+          {renderSessionHistory()}
         </div>
-        <SessionForm />
+        {renderSessionForm()}
       </section>
     </div>
   );

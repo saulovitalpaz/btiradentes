@@ -18,7 +18,6 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
     loadData();
   }, []);
 
-  const today = new Date().toISOString().split('T')[0];
   const now = new Date();
 
   // Upcoming appointments (not 'Realizado' and >= today)
@@ -49,7 +48,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
 
   if (loading) return <div className="dashboard"><p>Carregando dados...</p></div>;
 
-  const DashboardContent = () => {
+  const renderDashboardContent = () => {
     if (isMobile) {
       return (
         <div className="mobile-dashboard">
@@ -117,9 +116,9 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
     }
 
     return (
-      <section className="main-grid" style={{ gridTemplateColumns: 'minmax(300px, 1fr) minmax(350px, 1.25fr)' }}>
+      <section className="main-grid dashboard-grid">
         {/* LEFT COLUMN: Operations (Appointments & History) */}
-        <div className="operations-column" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="operations-column">
           
           <div className="appointments-card">
             <div className="section-header">
@@ -184,7 +183,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
         </div>
 
         {/* RIGHT COLUMN: Fast Start & Insights */}
-        <div className="quick-actions" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="quick-actions">
           
           <div className="quick-start-card" style={{ flexShrink: 0 }}>
             <h4>Nova Sessão Rápida</h4>
@@ -195,7 +194,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
             </button>
           </div>
 
-          <div style={{ flex: 1, display: 'flex' }}>
+          <div className="insights-panel">
             {/* The Clinical Insights component takes the rest of the height */}
             <ClinicalInsights />
           </div>
@@ -212,14 +211,14 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
         <p>Você tem {upcomingAppts.length} atendimentos futuros agendados.</p>
       </header>
 
-      <DashboardContent />
+      {renderDashboardContent()}
 
       {/* Quick Start Modal */}
       {showQuickModal && (
         <div className="modal-overlay" onClick={() => setShowQuickModal(false)} style={{ zIndex: 300 }}>
           <div className="modal-content mobile-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚡ Início Rápido</h3>
+              <h3>Início Rápido</h3>
               <button className="icon-btn" onClick={() => setShowQuickModal(false)}>
                 <span className="material-symbols-outlined">close</span>
               </button>

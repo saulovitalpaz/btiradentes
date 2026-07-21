@@ -4,6 +4,9 @@ import { fetchDB, addPatient } from '../services/api';
 const PatientList = ({ onSelectPatient }) => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [speciesFilter, setSpeciesFilter] = useState('Todos');
+  const [statusFilter, setStatusFilter] = useState('Todos');
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,6 +53,20 @@ const PatientList = ({ onSelectPatient }) => {
 
   if (loading) return <div className="patient-list-view"><p>Carregando pacientes...</p></div>;
 
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredPatients = patients.filter((patient) => {
+    const matchesSearch = !normalizedSearch || [
+      patient.name,
+      patient.tutor,
+      patient.breed,
+      patient.species,
+      patient.status,
+    ].some(value => String(value || '').toLowerCase().includes(normalizedSearch));
+    const matchesSpecies = speciesFilter === 'Todos' || patient.species === speciesFilter;
+    const matchesStatus = statusFilter === 'Todos' || patient.status === statusFilter;
+    return matchesSearch && matchesSpecies && matchesStatus;
+  });
+
   return (
     <div className="patient-list-view">
       <header className="view-header">
@@ -68,21 +85,35 @@ const PatientList = ({ onSelectPatient }) => {
            <span className="material-symbols-outlined search-icon">search</span>
            <div className="filter-inputs">
              <label>Buscar Paciente</label>
-             <input type="text" placeholder="Digite o nome ou tutor..." />
+             <input
+               type="text"
+               placeholder="Digite o nome ou tutor..."
+               value={search}
+               onChange={event => setSearch(event.target.value)}
+             />
            </div>
         </div>
         <div className="filter-card species">
            <label>Espécie</label>
            <div className="toggle-group">
-             <button className="toggle-btn active">Canino</button>
-             <button className="toggle-btn">Felino</button>
+             {['Todos', 'Canino', 'Felino'].map(species => (
+               <button
+                 key={species}
+                 type="button"
+                 className={`toggle-btn ${speciesFilter === species ? 'active' : ''}`}
+                 onClick={() => setSpeciesFilter(species)}
+               >
+                 {species}
+               </button>
+             ))}
            </div>
         </div>
         <div className="filter-card status">
            <label>Status</label>
-           <select className="status-select">
+           <select className="status-select" value={statusFilter} onChange={event => setStatusFilter(event.target.value)}>
              <option>Todos</option>
              <option>Tratamento Ativo</option>
+             <option>Recuperação Pós-Op</option>
              <option>Manutenção</option>
              <option>Alta</option>
            </select>
@@ -90,7 +121,7 @@ const PatientList = ({ onSelectPatient }) => {
       </section>
 
       <section className="patients-grid">
-         {patients.length === 0 ? <p style={{padding: '20px', color: 'var(--on-surface-variant)'}}>Nenhum paciente cadastrado ainda.</p> : patients.map((patient, i) => (
+         {filteredPatients.length === 0 ? <p style={{padding: '20px', color: 'var(--on-surface-variant)'}}>Nenhum paciente encontrado.</p> : filteredPatients.map((patient, i) => (
            <div key={i} className="patient-row">
              <div className="patient-avatar">
                <span className="material-symbols-outlined pet-icon">pets</span>

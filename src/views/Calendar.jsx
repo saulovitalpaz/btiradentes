@@ -12,19 +12,29 @@ const Calendar = ({ onSelectPatient }) => {
   const [time, setTime] = useState('');
   const [reason, setReason] = useState('Sessão Fisioterapia');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     const data = await fetchDB();
     if (!data.appointments) data.appointments = [];
     setDb(data);
-    if (data.patients.length > 0 && !patientId) {
-      setPatientId(data.patients[0].id);
-    }
+    setPatientId(current => current || data.patients[0]?.id || '');
     setLoading(false);
   };
+
+  useEffect(() => {
+    let isActive = true;
+
+    fetchDB().then(data => {
+      if (!isActive) return;
+      if (!data.appointments) data.appointments = [];
+      setDb(data);
+      setPatientId(current => current || data.patients[0]?.id || '');
+      setLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();

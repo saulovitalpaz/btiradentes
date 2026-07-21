@@ -241,6 +241,65 @@
   box-shadow: 0 0 0 2px var(--primary-container);
 }
 
+.search-results-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(60vh, 420px);
+  overflow: auto;
+  padding: 8px;
+  background: var(--surface-container-lowest);
+  border: var(--border-subtle);
+  border-radius: var(--radius-default);
+  box-shadow: var(--shadow-panel);
+  z-index: 300;
+}
+
+.search-result-item {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius-default);
+  color: var(--on-surface);
+  text-align: left;
+}
+
+.search-result-item:hover {
+  background: var(--surface-container-low);
+}
+
+.search-result-item .material-symbols-outlined {
+  color: var(--primary);
+}
+
+.search-result-item span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.search-result-item strong,
+.search-result-item small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-result-item small,
+.search-empty {
+  color: var(--on-surface-variant);
+  font-size: 0.75rem;
+}
+
+.search-empty {
+  padding: 12px;
+}
+
 .icon-btn {
   width: 40px;
   height: 40px;
@@ -2331,5 +2390,330 @@
 
   .bottom-nav-fab .material-symbols-outlined {
     font-size: 24px;
+  }
+}
+
+/* === UI Pro compact clinical polish === */
+.content-area {
+  max-width: 1180px;
+  padding: 24px;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+}
+
+.dashboard h2,
+.view-header h2,
+.sessions-header h2,
+.patient-basic-info h2 {
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.main-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  align-items: start;
+  gap: 18px;
+}
+
+.operations-column,
+.quick-actions,
+.history-section,
+.patients-grid,
+.sessions-list-container,
+.appointments-list {
+  min-width: 0;
+}
+
+.operations-column,
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.insights-panel {
+  display: flex;
+  min-width: 0;
+}
+
+.appointments-card,
+.filter-card,
+.patient-row,
+.info-card,
+.profile-status-card,
+.chart-card,
+.new-session-form,
+.insight-card,
+.sessions-filters,
+.session-item,
+.appt-card,
+.modal-content {
+  border: var(--border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+.appointments-card,
+.chart-card,
+.insight-card,
+.new-session-form {
+  background-color: var(--surface-container-lowest);
+}
+
+.appointments-card,
+.chart-card,
+.insight-card {
+  padding: 18px;
+}
+
+.quick-start-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-card);
+}
+
+.quick-start-card p {
+  margin-bottom: 16px;
+}
+
+.appointment-item,
+.patient-row,
+.session-item,
+.appt-card,
+.filter-card,
+.info-card {
+  min-width: 0;
+  box-shadow: none;
+}
+
+.appointment-item,
+.patient-row,
+.session-item,
+.appt-card {
+  border: var(--border-subtle);
+}
+
+.appointment-item:hover,
+.patient-row:hover,
+.session-item:hover,
+.appt-card:hover,
+.btn-view-record:hover,
+.filter-card:focus-within {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.appointment-item,
+.patient-row,
+.session-item,
+.appt-card,
+.btn-view-record,
+.btn-primary,
+.btn-secondary,
+.btn-submit,
+.btn-quick-start,
+.toggle-btn {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.patient-row {
+  gap: 18px;
+  padding: 14px 18px;
+}
+
+.patient-info,
+.patient-meta,
+.apt-details,
+.apt-patient,
+.session-patient-col,
+.session-type-col,
+.session-zones-col {
+  min-width: 0;
+}
+
+.patient-info h3,
+.patient-info p,
+.apt-name,
+.apt-breed,
+.apt-session,
+.meta-value,
+.session-zones-col .meta-value {
+  overflow-wrap: anywhere;
+}
+
+.btn-view-record {
+  border: var(--border-subtle);
+  white-space: nowrap;
+}
+
+.profile-header {
+  grid-template-columns: 128px minmax(0, 1fr) minmax(260px, 320px);
+  gap: 20px;
+  align-items: center;
+}
+
+.patient-photo {
+  width: 128px;
+  height: 128px;
+  box-shadow: var(--shadow-card);
+}
+
+.patient-basic-info h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.info-cards {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.info-card {
+  padding: 10px 12px;
+  flex: 0 1 auto;
+  max-width: 220px;
+}
+
+.profile-status-card {
+  height: auto;
+  min-height: 148px;
+  padding: 18px;
+}
+
+.profile-content {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 20px;
+  align-items: start;
+}
+
+.new-session-form {
+  max-height: calc(100vh - 112px);
+  overflow: auto;
+}
+
+.form-header,
+.form-body {
+  padding: 18px;
+}
+
+.form-body {
+  gap: 16px;
+}
+
+.modal-content {
+  background-color: var(--surface-container-lowest);
+  max-height: min(88vh, 720px);
+  overflow: auto;
+}
+
+.upload-zone {
+  padding: 18px;
+  border-radius: var(--radius-default);
+}
+
+.upload-preview-item,
+.upload-preview-img,
+.upload-preview-file {
+  width: 64px;
+}
+
+.upload-preview-img,
+.upload-preview-file {
+  height: 64px;
+}
+
+.attachment-thumb {
+  width: 56px;
+  height: 56px;
+}
+
+@media (max-width: 1280px) {
+  .content-area {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .content-area {
+    padding: 18px;
+  }
+
+  .main-grid,
+  .profile-content {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .profile-status-card {
+    grid-column: 1 / -1;
+  }
+
+  .new-session-form {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-area {
+    padding: 12px 12px 80px;
+  }
+
+  .appointments-card,
+  .chart-card,
+  .insight-card,
+  .quick-start-card,
+  .filter-card {
+    padding: 14px;
+  }
+
+  .appointment-item,
+  .patient-row,
+  .session-item,
+  .appt-card {
+    padding: 12px;
+  }
+
+  .patient-row:hover,
+  .session-item:hover,
+  .appt-card:hover,
+  .appointment-item:hover {
+    transform: none;
+  }
+
+  .profile-header {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .patient-photo {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  .patient-basic-info h2 {
+    font-size: 1.35rem !important;
+  }
+
+  .info-card {
+    max-width: none;
+  }
+
+  .modal-content {
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

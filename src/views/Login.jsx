@@ -14,10 +14,7 @@ const Login = () => {
     setError('');
     setIsLoading(true);
 
-    // Simulate a brief loading state
-    await new Promise(r => setTimeout(r, 600));
-
-    const result = login(email, password);
+    const result = await login(email, password);
     if (!result.success) {
       setError(result.error);
     }

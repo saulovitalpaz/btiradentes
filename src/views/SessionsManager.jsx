@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { fetchDB } from '../services/api';
 
 const SessionsManager = ({ onSelectPatient, filterToday = false }) => {
+  const getToday = () => new Date().toISOString().split('T')[0];
   const [db, setDb] = useState({ patients: [], sessions: [] });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterPatient, setFilterPatient] = useState('all');
-  const [filterDateFrom, setFilterDateFrom] = useState('');
-  const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState(() => filterToday ? getToday() : '');
+  const [filterDateTo, setFilterDateTo] = useState(() => filterToday ? getToday() : '');
 
   useEffect(() => {
     const load = async () => {
@@ -17,11 +18,6 @@ const SessionsManager = ({ onSelectPatient, filterToday = false }) => {
     };
     load();
 
-    if (filterToday) {
-      const today = new Date().toISOString().split('T')[0];
-      setFilterDateFrom(today);
-      setFilterDateTo(today);
-    }
   }, [filterToday]);
 
   if (loading) return <div className="sessions-view"><p>Carregando sessões...</p></div>;

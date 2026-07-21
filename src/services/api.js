@@ -1,11 +1,45 @@
 const API_URL = '/api/data';
+const UPLOAD_URL = '/api/upload';
+const AUTH_URL = '/api/auth';
+const SEARCH_URL = '/api/search';
+
+const requestJson = async (url, options = {}) => {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.headers || {}),
+    },
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Falha na requisição');
+  return data;
+};
+
+export const loginUser = async (email, password) => requestJson(`${AUTH_URL}/login`, {
+  method: 'POST',
+  body: JSON.stringify({ email, password }),
+});
+
+export const fetchCurrentUser = async () => requestJson(`${AUTH_URL}/me`);
+
+export const logoutUser = async () => requestJson(`${AUTH_URL}/logout`, {
+  method: 'POST',
+});
+
+export const changePassword = async (currentPassword, newPassword) => requestJson(`${AUTH_URL}/password`, {
+  method: 'POST',
+  body: JSON.stringify({ currentPassword, newPassword }),
+});
+
+export const searchRecords = async (query) => requestJson(`${SEARCH_URL}?q=${encodeURIComponent(query)}`);
 
 // Fetches the entire database state
 export const fetchDB = async () => {
   try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error('Failed to fetch data');
-    const data = await response.json();
+    const data = await requestJson(API_URL);
     // Ensure default structure
     return {
       patients: data.patients || [],
@@ -14,7 +48,7 @@ export const fetchDB = async () => {
     };
   } catch (error) {
     console.error('API Error:', error);
-    return { patients: [], sessions: [] };
+    return { patients: [], sessions: [], appointments: [] };
   }
 };
 
@@ -23,6 +57,7 @@ export const saveDB = async (data) => {
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -34,6 +69,29 @@ export const saveDB = async (data) => {
     console.error('API Error:', error);
     return { success: false };
   }
+};
+
+export const uploadSessionFile = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(UPLOAD_URL, {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: formData
+  });
+
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Falha ao enviar arquivo');
+  }
+
+  return {
+    filename: data.filename,
+    url: data.url,
+    name: file.name,
+    type: file.type
+  };
 };
 
 export const addPatient = async (patient) => {

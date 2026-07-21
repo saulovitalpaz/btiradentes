@@ -1,31 +1,65 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { changePassword, fetchCurrentUser, loginUser, logoutUser } from '../services/api';
 
 const AuthContext = createContext(null);
 
-const VALID_EMAIL = 'garotadesorte@btiradentes.vet';
-const VALID_PASSWORD = 'guerreira21';
-
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('bt_auth') === 'true';
-  });
+  const [user, setUser] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  const login = (email, password) => {
-    if (email === VALID_EMAIL && password === VALID_PASSWORD) {
-      setIsAuthenticated(true);
-      localStorage.setItem('bt_auth', 'true');
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchCurrentUser()
+      .then((result) => {
+        if (isMounted) setUser(result.authenticated ? result.user : null);
+      })
+      .catch(() => {
+        if (isMounted) setUser(null);
+      })
+      .finally(() => {
+        if (isMounted) setIsCheckingAuth(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      const result = await loginUser(email, password);
+      setUser(result.user);
       return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message || 'Email ou senha incorretos.' };
     }
-    return { success: false, error: 'Email ou senha incorretos.' };
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('bt_auth');
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } finally {
+      setUser(null);
+    }
   };
+
+  const updatePassword = async (currentPassword, newPassword) => {
+    await changePassword(currentPassword, newPassword);
+    setUser(null);
+  };
+
+  const value = useMemo(() => ({
+    user,
+    isAuthenticated: Boolean(user),
+    isCheckingAuth,
+    login,
+    logout,
+    updatePassword,
+  }), [user, isCheckingAuth]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
