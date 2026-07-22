@@ -130,11 +130,11 @@ const PatientList = ({ onSelectPatient }) => {
                 <h3>{patient.name}</h3>
                 <p>{patient.breed} • {patient.age || '0'}</p>
              </div>
-             <div className="patient-meta">
+             <div className="patient-meta tutor-meta">
                 <span className="meta-label">Tutor</span>
                 <span className="meta-value">{patient.tutor}</span>
              </div>
-             <div className="patient-meta">
+             <div className="patient-meta last-session-meta">
                 <span className="meta-label">Última Sessão</span>
                 <span className="meta-value">{patient.lastSession ? new Date(patient.lastSession).toLocaleDateString('pt-BR') : 'Nenhuma'}</span>
              </div>

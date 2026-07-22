@@ -2717,3 +2717,312 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================
+   Final mobile UI fixes
+   ========================================== */
+.filters-section {
+  grid-template-columns: minmax(220px, 1.35fr) minmax(220px, 0.9fr) minmax(150px, 0.65fr);
+  align-items: stretch;
+}
+
+.filter-card {
+  min-height: 0;
+  border-radius: 8px;
+}
+
+.filter-card.search {
+  min-width: 0;
+}
+
+.filter-card input,
+.status-select {
+  width: 100%;
+  min-width: 0;
+}
+
+.patient-row {
+  border-radius: 8px;
+}
+
+.animal-silhouette {
+  fill: #f4efe1;
+  stroke: #a99655;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.animal-silhouette .animal-neck,
+.animal-silhouette .animal-ear,
+.animal-silhouette .animal-leg {
+  fill: #eee7d3;
+}
+
+.animal-silhouette .animal-muzzle,
+.animal-silhouette .animal-tail {
+  fill: none;
+}
+
+.body-zone {
+  fill: rgba(109, 94, 0, 0.08);
+  stroke: rgba(109, 94, 0, 0.38);
+  stroke-width: 1.5;
+  transition: fill var(--transition-fast), stroke var(--transition-fast), filter var(--transition-fast);
+}
+
+.body-zone:hover {
+  fill: rgba(255, 219, 44, 0.22);
+  stroke: var(--primary);
+}
+
+.body-zone.selected {
+  fill: rgba(255, 219, 44, 0.48);
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 4px 8px rgba(109, 94, 0, 0.22));
+}
+
+.body-diagram-svg {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.7), rgba(250,247,239,0.95));
+  padding: 8px;
+}
+
+.body-diagram-chips .toggle-btn {
+  flex: 0 1 auto;
+  min-height: 34px;
+  padding: 6px 10px !important;
+  border: 1px solid var(--outline-variant);
+  white-space: normal;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    z-index: 160;
+  }
+
+  .sidebar-overlay {
+    z-index: 155;
+  }
+
+  .modal-overlay {
+    align-items: center;
+    padding: 12px;
+  }
+
+  .modal-content,
+  .modal-content.mobile-modal {
+    width: min(100%, 520px);
+    max-height: calc(100dvh - 24px);
+    margin: 0;
+    border-radius: 14px;
+    padding: 18px 16px;
+    gap: 14px;
+  }
+
+  .modal-header h3 {
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+
+  .mobile-actions-stack {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .mobile-actions-stack .btn-secondary {
+    width: auto;
+    flex: 0 0 auto;
+    padding-inline: 14px;
+  }
+
+  .mobile-actions-stack .btn-primary {
+    width: auto;
+    flex: 1 1 180px;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .patient-list-view {
+    gap: 12px;
+  }
+
+  .view-header {
+    gap: 8px;
+  }
+
+  .view-header .btn-primary {
+    align-self: stretch;
+    justify-content: center;
+    padding: 10px 14px;
+  }
+
+  .filters-section {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .filter-card {
+    padding: 10px 12px;
+  }
+
+  .filter-card.search {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filter-card.search .search-icon {
+    font-size: 20px;
+  }
+
+  .filter-card label {
+    font-size: 0.68rem;
+  }
+
+  .filter-card input,
+  .status-select {
+    min-height: 34px;
+    font-size: 0.92rem;
+  }
+
+  .filter-card.species .toggle-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    background: transparent;
+    padding: 0;
+  }
+
+  .filter-card.species .toggle-btn {
+    min-height: 36px;
+    padding: 7px 8px;
+    font-size: 0.8rem;
+    border: 1px solid var(--outline-variant);
+  }
+
+  .patients-grid {
+    gap: 8px;
+  }
+
+  .patient-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "avatar info status"
+      "avatar tutor action";
+    align-items: center;
+    gap: 8px 10px;
+    padding: 12px;
+  }
+
+  .patient-avatar {
+    grid-area: avatar;
+    width: 44px;
+    height: 44px;
+  }
+
+  .patient-info {
+    grid-area: info;
+    min-width: 0;
+  }
+
+  .patient-info h3 {
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  .patient-info p {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .patient-meta {
+    min-width: 0;
+  }
+
+  .tutor-meta {
+    grid-area: tutor;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .last-session-meta {
+    display: none;
+  }
+
+  .tutor-meta .meta-label {
+    font-size: 0.62rem;
+  }
+
+  .tutor-meta .meta-value {
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .patient-status {
+    grid-area: status;
+    justify-self: end;
+  }
+
+  .status-tag {
+    display: inline-flex;
+    max-width: 112px;
+    min-height: 24px;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    font-size: 0.58rem;
+    line-height: 1.1;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .btn-view-record {
+    grid-area: action;
+    width: auto;
+    min-height: 36px;
+    margin-left: 0;
+    padding: 7px 10px;
+    justify-content: center;
+    font-size: 0.78rem;
+  }
+
+  .body-diagram-wrapper {
+    padding: 10px;
+  }
+
+  .body-diagram-svg {
+    max-height: 180px;
+  }
+
+  .body-diagram-chips {
+    gap: 6px;
+  }
+
+  .body-diagram-chips .toggle-btn {
+    min-height: 34px;
+    font-size: 0.72rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobile-actions-stack {
+    flex-direction: column;
+  }
+
+  .mobile-actions-stack .btn-secondary,
+  .mobile-actions-stack .btn-primary {
+    width: 100%;
+  }
+}

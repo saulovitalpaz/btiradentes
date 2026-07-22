@@ -41,20 +41,17 @@ const Layout = ({ children, activeTab, onTabChange, onLogout, onSelectPatient, t
     <div className={`layout-container ${isMobile ? 'mobile-mode' : 'desktop-mode'}`}>
       {isSidebarOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
 
-      {/* Sidebar only for desktop or as a drawer on mobile (if needed, but currently replaced by BottomNav) */}
-      {!isMobile && (
-        <Sidebar
-          activeTab={activeTab}
-          onTabChange={(tab) => {
-            onTabChange(tab);
-            setIsSidebarOpen(false);
-          }}
-          onLogout={onLogout}
-          isOpen={isSidebarOpen}
-          onClose={toggleSidebar}
-          onSelectPatient={onSelectPatient}
-        />
-      )}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          onTabChange(tab);
+          setIsSidebarOpen(false);
+        }}
+        onLogout={onLogout}
+        isOpen={isSidebarOpen}
+        onClose={toggleSidebar}
+        onSelectPatient={onSelectPatient}
+      />
 
       <div className="main-wrapper">
         <TopBar
@@ -70,7 +67,7 @@ const Layout = ({ children, activeTab, onTabChange, onLogout, onSelectPatient, t
         </main>
         
         {/* Mobile only navigation */}
-        {isMobile && (
+        {isMobile && !isSidebarOpen && (
           <BottomNav
             activeTab={activeTab}
             onTabChange={(tab) => {

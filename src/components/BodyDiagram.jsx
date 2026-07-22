@@ -1,16 +1,16 @@
 import React from 'react';
 
 const ZONES = [
-  { id: 'head',          label: 'Cabeça',           d: 'M200,30 Q220,10 240,15 Q270,8 285,35 Q295,55 280,75 Q260,90 230,88 Q205,80 198,60 Z' },
-  { id: 'neck',          label: 'Pescoço',           d: 'M198,62 Q205,82 220,90 Q230,95 240,90 L255,110 Q245,125 225,128 Q205,125 195,108 Z' },
-  { id: 'thorax',        label: 'Tórax',             d: 'M195,108 Q205,125 225,128 L255,112 L290,118 Q310,135 315,160 Q310,185 295,195 L250,198 Q225,200 205,195 Q190,185 188,165 Q186,140 195,108 Z' },
-  { id: 'lumbar',        label: 'Lombar',            d: 'M295,118 L315,160 Q320,180 315,200 L350,200 Q365,195 375,178 Q380,155 368,135 Q355,118 335,115 Z' },
-  { id: 'sacrum',        label: 'Sacro / Cauda',     d: 'M350,200 L375,178 Q380,155 368,135 L400,125 Q420,125 430,140 L440,135 Q450,125 455,110 Q465,100 470,85 L465,208 Q445,215 415,210 Z' },
-  { id: 'front_right',   label: 'MMA Direito',       d: 'M188,168 Q178,178 170,200 L165,235 Q163,255 168,270 Q173,285 185,287 Q197,285 202,270 Q205,255 204,235 L205,195 Z' },
-  { id: 'front_left',    label: 'MMA Esquerdo',      d: 'M295,195 L297,220 Q298,245 295,265 Q290,280 278,283 Q266,282 262,267 Q258,250 260,230 L262,198 Z' },
-  { id: 'rear_right',    label: 'MMP Direito',       d: 'M410,208 L405,240 Q402,265 400,285 Q396,308 385,318 Q373,322 365,315 Q357,305 358,288 Q360,270 365,250 L368,220 L415,210 Z' },
-  { id: 'rear_left',     label: 'MMP Esquerdo',      d: 'M465,205 L468,230 Q470,255 468,275 Q465,295 455,308 Q444,318 433,314 Q422,308 422,292 Q422,272 425,252 L428,225 L465,208 Z' },
-  { id: 'abdomen',       label: 'Abdômen',           d: 'M205,198 Q225,202 250,200 L295,198 L297,220 Q290,240 260,242 Q235,242 210,238 L205,220 Z' },
+  { id: 'head', label: 'Cabeça', d: 'M126 109 C132 83 158 67 187 73 C210 78 225 96 225 116 C225 139 204 156 176 154 C150 152 127 136 126 109Z' },
+  { id: 'neck', label: 'Pescoço', d: 'M182 147 C200 143 215 132 224 116 C239 127 254 143 263 163 C252 180 232 190 209 188 C193 180 184 166 182 147Z' },
+  { id: 'thorax', label: 'Tórax', d: 'M209 188 C219 151 249 130 291 127 C330 124 361 143 374 174 C370 209 343 232 302 236 C258 240 224 221 209 188Z' },
+  { id: 'lumbar', label: 'Lombar', d: 'M365 143 C404 141 439 154 462 177 C464 210 442 235 401 241 C363 236 347 210 374 174 C373 163 370 153 365 143Z' },
+  { id: 'sacrum', label: 'Sacro / Cauda', d: 'M452 174 C474 169 494 155 510 132 C515 155 504 178 480 199 C479 220 461 236 432 242 C446 223 465 199 452 174Z' },
+  { id: 'front_right', label: 'MMA Direito', d: 'M219 208 C231 212 240 219 244 231 C247 255 240 285 226 299 C214 310 201 304 200 285 C199 262 205 229 219 208Z' },
+  { id: 'front_left', label: 'MMA Esquerdo', d: 'M293 232 C309 232 321 240 325 253 C327 275 319 297 304 307 C291 315 281 309 279 292 C276 271 282 246 293 232Z' },
+  { id: 'rear_right', label: 'MMP Direito', d: 'M398 238 C414 235 428 241 435 254 C437 278 429 302 414 314 C401 324 388 319 386 301 C383 279 388 253 398 238Z' },
+  { id: 'rear_left', label: 'MMP Esquerdo', d: 'M457 229 C472 224 486 230 492 244 C496 268 491 294 477 309 C466 320 451 316 448 298 C445 276 449 247 457 229Z' },
+  { id: 'abdomen', label: 'Abdômen', d: 'M296 234 C329 237 369 239 405 237 C396 256 372 269 335 270 C300 271 270 260 255 240 C268 236 282 234 296 234Z' },
 ];
 
 const BodyDiagram = ({ selectedZones = [], onChange }) => {
@@ -30,53 +30,36 @@ const BodyDiagram = ({ selectedZones = [], onChange }) => {
       </p>
       <div className="body-diagram-container">
         <svg
-          viewBox="0 0 510 340"
+          viewBox="0 0 560 330"
           xmlns="http://www.w3.org/2000/svg"
           className="body-diagram-svg"
-          aria-label="Diagrama corporal canino"
+          aria-label="Diagrama corporal veterinário"
         >
-          {/* Dog outline / background silhouette */}
-          <ellipse cx="255" cy="180" rx="200" ry="100" fill="#f5f0e0" stroke="#e0d8c0" strokeWidth="1" />
-          
-          {/* Zones */}
+          <g className="animal-silhouette" aria-hidden="true">
+            <path
+              className="animal-body"
+              d="M178 147 C196 105 244 86 306 91 C378 97 442 127 478 174 C489 189 481 215 456 232 C424 255 363 261 298 251 C237 242 193 218 177 184 C172 173 171 158 178 147Z"
+            />
+            <path className="animal-neck" d="M179 145 C196 137 212 123 224 103 C240 119 259 141 268 164 C253 183 229 193 205 187 C190 178 181 164 179 145Z" />
+            <path className="animal-head" d="M121 109 C126 80 154 60 188 66 C213 70 232 90 235 113 C238 139 216 162 181 160 C150 158 124 139 121 109Z" />
+            <path className="animal-muzzle" d="M123 109 C102 108 88 118 82 133 C100 142 122 137 135 124" />
+            <path className="animal-ear" d="M179 69 C194 42 220 46 225 76 C213 80 197 78 179 69Z" />
+            <path className="animal-tail" d="M474 176 C497 166 512 149 520 121 C530 150 516 184 483 204" />
+            <path className="animal-leg" d="M221 209 C235 216 244 234 242 252 C239 276 229 299 215 304 C202 296 201 271 207 247 C210 232 214 219 221 209Z" />
+            <path className="animal-leg" d="M294 231 C313 234 325 248 324 267 C322 288 311 306 298 310 C286 303 282 281 286 261 C288 248 290 239 294 231Z" />
+            <path className="animal-leg" d="M400 237 C418 237 432 250 433 269 C434 290 423 310 409 316 C395 309 391 285 394 263 C396 252 397 243 400 237Z" />
+            <path className="animal-leg" d="M459 228 C478 224 491 238 493 258 C495 281 487 303 473 312 C459 306 453 282 455 259 C456 246 457 236 459 228Z" />
+          </g>
+
           {ZONES.map(zone => {
             const selected = selectedZones.includes(zone.id);
             return (
               <g key={zone.id} onClick={() => toggle(zone.id)} style={{ cursor: 'pointer' }}>
                 <path
                   d={zone.d}
-                  fill={selected ? 'rgba(109, 94, 0, 0.45)' : 'rgba(109, 94, 0, 0.08)'}
-                  stroke={selected ? '#6d5e00' : '#b0a060'}
-                  strokeWidth={selected ? 2.5 : 1}
-                  style={{
-                    transition: 'fill 0.2s, stroke 0.2s',
-                    filter: selected ? 'drop-shadow(0 0 4px rgba(109,94,0,0.4))' : 'none'
-                  }}
+                  className={`body-zone ${selected ? 'selected' : ''}`}
                 />
               </g>
-            );
-          })}
-
-          {/* Zone labels (small) */}
-          {ZONES.map(zone => {
-            // Rough centroid for label - just use a fixed small text near the path
-            const selected = selectedZones.includes(zone.id);
-            return (
-              <text
-                key={`label-${zone.id}`}
-                className="zone-label"
-                style={{
-                  fontSize: '7px',
-                  fill: selected ? '#6d5e00' : '#8a7a40',
-                  fontWeight: selected ? '700' : '500',
-                  pointerEvents: 'none',
-                  userSelect: 'none',
-                }}
-              >
-                <textPath href={`#${zone.id}-path`} startOffset="10%">
-                  {zone.label}
-                </textPath>
-              </text>
             );
           })}
         </svg>
