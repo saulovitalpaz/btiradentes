@@ -1,41 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
+const PUBMED_QUERY = '(veterinary physiotherapy OR veterinary acupuncture OR veterinary neurology)';
 
 const ClinicalInsights = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const fetchPubMed = async () => {
       try {
-        // Query PubMed for recent articles on veterinary physiotherapy or rehabilitation
-        const searchUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=veterinary+physiotherapy+OR+veterinary+rehabilitation&retmode=json&retmax=4&sort=date';
+        const searchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=${encodeURIComponent(PUBMED_QUERY)}&retmode=json&retmax=4&sort=date`;
         const searchRes = await fetch(searchUrl);
         const searchData = await searchRes.json();
-        const ids = searchData.esearchresult.idlist.join(',');
+        const ids = searchData.esearchresult?.idlist || [];
 
-        if (!ids) {
-          setLoading(false);
-          return;
-        }
+        if (ids.length === 0) return;
 
-        // Fetch details for those IDs
-        const detailsUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${ids}&retmode=json`;
+        const detailsUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${ids.join(',')}&retmode=json`;
         const detailsRes = await fetch(detailsUrl);
         const detailsData = await detailsRes.json();
 
-        const results = searchData.esearchresult.idlist.map(id => {
-          const item = detailsData.result[id];
-          return {
-            id,
-            title: item.title,
-            journal: item.source,
-            date: item.pubdate.substring(0, 4)
-          };
-        });
+        const results = ids
+          .map((id) => {
+            const item = detailsData.result?.[id];
+            if (!item) return null;
+
+            return {
+              id,
+              title: item.title,
+              journal: item.source,
+              date: item.pubdate?.substring(0, 4) || '—',
+            };
+          })
+          .filter(Boolean);
 
         setArticles(results);
-      } catch (err) {
-        console.error('Failed to fetch from PubMed', err);
+      } catch (error) {
+        console.error('Falha ao buscar artigos no PubMed', error);
       } finally {
         setLoading(false);
       }
@@ -47,40 +49,69 @@ const ClinicalInsights = () => {
   return (
     <div className="insight-card dynamic-insight">
       <div className="insight-header">
-        <span className="material-symbols-outlined insight-icon">science</span>
-        <span>Science & Insights</span>
+        <div className="insight-title">
+          <span className="material-symbols-outlined insight-icon">science</span>
+          <span>Artigos veterinários</span>
+        </div>
+        <button
+          type="button"
+          className="articles-toggle"
+          aria-expanded={isExpanded}
+          aria-controls="clinical-articles-list"
+          onClick={() => setIsExpanded((expanded) => !expanded)}
+        >
+          <span>{isExpanded ? 'Ocultar artigos' : 'Ver artigos'}</span>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            {isExpanded ? 'expand_less' : 'expand_more'}
+          </span>
+        </button>
       </div>
-      
-      <p style={{fontSize: '0.8rem', color: 'var(--on-surface-variant)', marginBottom: '16px'}}>
-        Últimos artigos publicados sobre Fisioterapia e Reabilitação Veterinária:
+
+      <p className="insight-description">
+        Pesquisas recentes sobre fisioterapia, acupuntura e neurologia veterinária.
       </p>
 
-      {loading ? (
-        <div style={{padding: '20px 0', textAlign: 'center', opacity: 0.5}}>Buscando no PubMed...</div>
-      ) : articles.length > 0 ? (
-        <div className="articles-list">
-          {articles.map(article => (
-            <a 
-              key={article.id} 
-              href={`https://pubmed.ncbi.nlm.nih.gov/${article.id}/`}
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="article-link"
-            >
-              <h5 className="article-title">{article.title}</h5>
-              <span className="article-meta">{article.journal} • {article.date}</span>
-            </a>
-          ))}
-        </div>
-      ) : (
-        <p className="insight-text">
-          "Pacientes que recebem laserterapia de baixa intensidade dentro de 48h após a cirurgia apresentam uma recuperação inicial 30% mais rápida na mobilidade articular."
-        </p>
-      )}
+      <div
+        id="clinical-articles-list"
+        className={`articles-list ${isExpanded ? 'expanded' : 'compact'}`}
+      >
+        {loading ? (
+          <div className="articles-status">Buscando artigos...</div>
+        ) : articles.length > 0 ? (
+          articles.slice(0, 4).map((article) => {
+            const content = (
+              <>
+                <h5 className="article-title">{article.title}</h5>
+                {isExpanded && (
+                  <span className="article-meta">{article.journal} • {article.date}</span>
+                )}
+              </>
+            );
+
+            return isExpanded ? (
+              <a
+                key={article.id}
+                href={`https://pubmed.ncbi.nlm.nih.gov/${article.id}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="article-link"
+              >
+                {content}
+              </a>
+            ) : (
+              <div key={article.id} className="article-compact">
+                {content}
+              </div>
+            );
+          })
+        ) : (
+          <p className="articles-status">Nenhum artigo encontrado.</p>
+        )}
+      </div>
 
       <div className="insight-footer">
-        <span className="source" style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-          <span className="material-symbols-outlined" style={{fontSize: '14px'}}>database</span>
+        <span className="source">
+          <span className="material-symbols-outlined" aria-hidden="true">database</span>
           FONTE: PUBMED API (E-UTILITIES)
         </span>
       </div>
@@ -91,39 +122,143 @@ const ClinicalInsights = () => {
           flex-direction: column;
           height: 100%;
         }
+
+        .insight-header {
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 10px;
+        }
+
+        .insight-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          min-width: 0;
+        }
+
+        .articles-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          flex-shrink: 0;
+          padding: 6px 8px;
+          border: 1px solid var(--outline-variant);
+          border-radius: var(--radius-full);
+          color: var(--primary);
+          font-size: 0.7rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .articles-toggle:hover {
+          background: var(--surface-container-low);
+        }
+
+        .articles-toggle:focus-visible {
+          outline: 3px solid rgba(109, 94, 0, 0.22);
+          outline-offset: 2px;
+        }
+
+        .insight-description {
+          margin-bottom: 12px;
+          color: var(--on-surface-variant);
+          font-size: 0.76rem;
+          line-height: 1.4;
+        }
+
         .articles-list {
           display: flex;
           flex-direction: column;
-          gap: 16px;
-          margin-bottom: 24px;
         }
+
+        .articles-list.compact {
+          gap: 4px;
+        }
+
+        .articles-list.expanded {
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+
+        .article-compact,
         .article-link {
-          text-decoration: none;
-          color: inherit;
-          display: block;
-          padding: 12px;
+          min-width: 0;
+          padding: 8px 10px;
           border-radius: var(--radius-default);
           background-color: var(--surface-container-lowest);
           border: 1px solid var(--outline-variant);
+        }
+
+        .article-compact {
+          padding-block: 5px;
+          border-color: transparent;
+          background: transparent;
+        }
+
+        .article-link {
+          display: block;
+          color: inherit;
+          text-decoration: none;
           transition: all var(--transition-fast);
         }
+
         .article-link:hover {
           background-color: var(--surface-container-low);
           border-color: var(--primary);
-          transform: translateY(-2px);
+          transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(109, 94, 0, 0.05);
         }
+
         .article-title {
-          font-size: 0.85rem;
-          line-height: 1.4;
-          margin-bottom: 6px;
+          overflow: hidden;
           color: var(--on-surface);
+          font-size: 0.82rem;
+          line-height: 1.35;
+          text-overflow: ellipsis;
         }
+
+        .articles-list.compact .article-title {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 0.76rem;
+          font-weight: 600;
+        }
+
         .article-meta {
-          font-size: 0.7rem;
-          font-weight: 700;
+          display: block;
+          margin-top: 6px;
           color: var(--primary);
+          font-size: 0.68rem;
+          font-weight: 700;
           text-transform: uppercase;
+        }
+
+        .articles-status {
+          padding: 8px 0;
+          color: var(--on-surface-variant);
+          font-size: 0.78rem;
+          text-align: center;
+        }
+
+        .insight-footer {
+          margin-top: auto;
+        }
+
+        .source {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        @media (max-width: 520px) {
+          .insight-header {
+            align-items: flex-start;
+          }
+
+          .articles-toggle {
+            font-size: 0.62rem;
+          }
         }
       `}</style>
     </div>

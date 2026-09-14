@@ -88,10 +88,6 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
           </section>
 
           <section className="mobile-section">
-            <ClinicalInsights />
-          </section>
-
-          <section className="mobile-section">
              <div className="appointments-card">
               <div className="section-header">
                 <h3>Sessões Recentes</h3>
@@ -110,6 +106,10 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
                 })}
               </div>
             </div>
+          </section>
+
+          <section className="mobile-section">
+            <ClinicalInsights />
           </section>
         </div>
       );
@@ -194,11 +194,10 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
             </button>
           </div>
 
-          <div className="insights-panel">
-            {/* The Clinical Insights component takes the rest of the height */}
-            <ClinicalInsights />
-          </div>
+        </div>
 
+        <div className="dashboard-insights">
+          <ClinicalInsights />
         </div>
       </section>
     );

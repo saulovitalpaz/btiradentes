@@ -2438,6 +2438,11 @@
   min-width: 0;
 }
 
+.dashboard-insights {
+  min-width: 0;
+  grid-column: 1 / -1;
+}
+
 .appointments-card,
 .filter-card,
 .patient-row,
