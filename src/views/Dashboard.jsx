@@ -73,7 +73,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
                 ) : upcomingAppts.map((appt, i) => {
                     const patient = data.patients.find(p => p.id === appt.patientId) || { name: 'Desconhecido', species: '' };
                     return (
-                    <div key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)}>
+                    <button type="button" key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)} aria-label={`Abrir atendimento de ${patient.name}`}>
                       <div className="apt-time">
                         <span className="apt-value">{appt.time}</span>
                       </div>
@@ -81,7 +81,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
                         <p className="apt-name">{patient.name}</p>
                         <p className="apt-session">{appt.reason}</p>
                       </div>
-                    </div>
+                    </button>
                   )})}
               </div>
             </div>
@@ -96,12 +96,12 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
                 {recentSessions.map((session, i) => {
                   const patient = data.patients.find(p => p.id === session.patientId) || { name: 'Desconhecido' };
                   return (
-                    <div key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)}>
+                    <button type="button" key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)} aria-label={`Abrir histórico de ${patient.name}`}>
                       <div className="apt-details" style={{padding: '4px 0'}}>
                         <p className="apt-name">{patient.name}</p>
                         <p className="apt-session">{session.type} · {new Date(session.createdAt).toLocaleDateString('pt-BR')}</p>
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
@@ -132,7 +132,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
               ) : upcomingAppts.map((appt, i) => {
                   const patient = data.patients.find(p => p.id === appt.patientId) || { name: 'Desconhecido', species: '' };
                   return (
-                  <div key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)} style={{cursor: 'pointer'}}>
+                  <button type="button" key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)} aria-label={`Abrir atendimento de ${patient.name}`}>
                     <div className="apt-time">
                       <span className="apt-label">{new Date(`${appt.date}T00:00:00`).toLocaleDateString('pt-BR', {weekday: 'short'}).toUpperCase()}</span>
                       <span className="apt-value" style={{fontSize: '1.25rem'}}>{appt.time}</span>
@@ -147,7 +147,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
                         <p className="apt-session" style={{fontSize: '0.75rem', color: 'var(--primary)'}}>{appt.reason || 'Sessão de Fisioterapia'}</p>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 )})}
             </div>
           </div>
@@ -163,7 +163,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
               ) : recentSessions.map((session, i) => {
                   const patient = data.patients.find(p => p.id === session.patientId) || { name: 'Desconhecido', species: '' };
                   return (
-                  <div key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)} style={{cursor: 'pointer', backgroundColor: 'var(--surface-container-low)'}}>
+                  <button type="button" key={i} className="appointment-item" onClick={() => onSelectPatient(patient.id)} aria-label={`Abrir histórico de ${patient.name}`} style={{ backgroundColor: 'var(--surface-container-low)' }}>
                     <div className="apt-time">
                       <span className="apt-label">Data</span>
                       <span className="apt-value" style={{fontSize: '1rem'}}>{new Date(session.createdAt).toLocaleDateString('pt-BR')}</span>
@@ -175,7 +175,7 @@ const Dashboard = ({ onSelectPatient, onNavigate }) => {
                         <p className="apt-session" style={{fontSize: '0.75rem'}}>{session.type || 'Fisioterapia'}</p>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 )})}
             </div>
           </div>

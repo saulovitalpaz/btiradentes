@@ -752,7 +752,7 @@
     background: none;
     border: none;
     border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease, background-color 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -1812,7 +1812,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .toggle-btn:hover {
@@ -2171,7 +2171,7 @@
   background: var(--surface-container-lowest);
   border: 1px solid var(--outline-variant);
   border-radius: var(--radius-default);
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .appt-card:hover {
@@ -3368,6 +3368,27 @@
 
 @media (prefers-reduced-motion: reduce) {
   .body-zone {
+    transition: none;
+  }
+}
+
+.appointment-item {
+  width: 100%;
+  border: var(--border-subtle);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.appointment-item:focus-visible {
+  outline: 3px solid rgba(109, 94, 0, 0.28);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appointment-item {
     transition: none;
   }
 }
