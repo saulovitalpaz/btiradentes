@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchDB, addPatient } from '../services/api';
+import { fetchDB, addPatient, updatePatient } from '../services/api';
 
 const PatientList = ({ onSelectPatient }) => {
   const [patients, setPatients] = useState([]);
@@ -10,13 +10,15 @@ const PatientList = ({ onSelectPatient }) => {
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     species: 'Canino',
     breed: '',
     age: '',
     tutor: '',
-    status: 'Tratamento Ativo'
+    status: 'Tratamento Ativo',
+    description: ''
   });
 
   useEffect(() => {
@@ -45,10 +47,17 @@ const PatientList = ({ onSelectPatient }) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.tutor.trim()) return;
 
-    const newPatient = await addPatient(formData);
-    setPatients([...patients, newPatient]);
+    const savedPatient = editingId ? await updatePatient(editingId, formData) : await addPatient(formData);
+    setPatients(editingId ? patients.map(patient => patient.id === editingId ? savedPatient : patient) : [...patients, savedPatient]);
     setIsModalOpen(false);
-    setFormData({ name: '', species: 'Canino', breed: '', age: '', tutor: '', status: 'Tratamento Ativo' });
+    setEditingId(null);
+    setFormData({ name: '', species: 'Canino', breed: '', age: '', tutor: '', status: 'Tratamento Ativo', description: '' });
+  };
+
+  const openEdit = patient => {
+    setEditingId(patient.id);
+    setFormData({ name: patient.name || '', species: patient.species || 'Canino', breed: patient.breed || '', age: patient.age || '', tutor: patient.tutor || '', status: patient.status || 'Tratamento Ativo', description: patient.description || '' });
+    setIsModalOpen(true);
   };
 
   if (loading) return <div className="patient-list-view"><p>Carregando pacientes...</p></div>;
@@ -141,6 +150,9 @@ const PatientList = ({ onSelectPatient }) => {
              <div className="patient-status">
                 <span className={`status-tag ${getStatusClass(patient.status)}`}>{patient.status || 'Ativo'}</span>
              </div>
+                  <button className="btn-secondary compact" onClick={() => openEdit(patient)}>
+                    <span className="material-symbols-outlined" aria-hidden="true">edit</span>Editar
+                  </button>
                   <button className="btn-view-record" onClick={() => onSelectPatient(patient.id)}>
                     Ver Ficha
                     <span className="material-symbols-outlined">arrow_forward</span>
@@ -154,9 +166,9 @@ const PatientList = ({ onSelectPatient }) => {
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Novo Paciente</h3>
-              <button className="icon-btn" onClick={() => setIsModalOpen(false)}>
-                <span className="material-symbols-outlined">close</span>
+              <h3>{editingId ? 'Editar Paciente' : 'Novo Paciente'}</h3>
+              <button type="button" className="icon-btn" aria-label="Fechar janela" onClick={() => setIsModalOpen(false)}>
+                <span className="material-symbols-outlined" aria-hidden="true">close</span>
               </button>
             </div>
             
@@ -190,10 +202,14 @@ const PatientList = ({ onSelectPatient }) => {
                 <label>Nome do Tutor</label>
                 <input type="text" name="tutor" className="form-input" value={formData.tutor} onChange={handleChange} required placeholder="Ex: João Silva" />
               </div>
+              <div className="form-group">
+                <label>Descrição</label>
+                <textarea name="description" className="form-textarea" rows="3" value={formData.description} onChange={handleChange} placeholder="Observações gerais do paciente…" />
+              </div>
               
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-                <button type="submit" className="btn-primary" style={{border: 'none', cursor: 'pointer'}}>Registrar</button>
+                <button type="submit" className="btn-primary" style={{border: 'none', cursor: 'pointer'}}>{editingId ? 'Salvar alterações' : 'Registrar'}</button>
               </div>
             </form>
           </div>

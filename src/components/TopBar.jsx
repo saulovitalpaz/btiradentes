@@ -6,7 +6,7 @@ const TABS = [
   { id: 'hoje', label: 'Hoje' },
 ];
 
-const TopBar = ({ onMenuClick, activeTab = 'visao-geral', onTabChange, onSelectPatient, onChangePassword }) => {
+const TopBar = ({ onMenuClick, activeTab = 'visao-geral', onTabChange, onSelectPatient }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState({ patients: [], sessions: [], appointments: [] });
   const [isSearching, setIsSearching] = useState(false);
@@ -64,7 +64,7 @@ const TopBar = ({ onMenuClick, activeTab = 'visao-geral', onTabChange, onSelectP
 
   const renderResultButton = ({ key, icon, title, meta, patientId }) => (
     <button key={key} className="search-result-item" type="button" onClick={() => selectPatient(patientId)}>
-      <span className="material-symbols-outlined">{icon}</span>
+      <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>
       <span>
         <strong>{title}</strong>
         <small>{meta}</small>
@@ -75,8 +75,8 @@ const TopBar = ({ onMenuClick, activeTab = 'visao-geral', onTabChange, onSelectP
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button className="icon-btn menu-btn" onClick={onMenuClick}>
-          <span className="material-symbols-outlined">menu</span>
+        <button type="button" className="icon-btn menu-btn" aria-label="Abrir menu" onClick={onMenuClick}>
+          <span className="material-symbols-outlined" aria-hidden="true">menu</span>
         </button>
         <span className="topbar-title">Portal da Clínica</span>
         <nav className="topbar-nav hide-on-mobile">
@@ -98,9 +98,10 @@ const TopBar = ({ onMenuClick, activeTab = 'visao-geral', onTabChange, onSelectP
 
       <div className="topbar-right">
         <div className="search-container" ref={searchRef}>
-          <span className="material-symbols-outlined search-icon">search</span>
+          <span className="material-symbols-outlined search-icon" aria-hidden="true">search</span>
           <input
             type="text"
+            aria-label="Buscar pacientes, sessões e agendamentos"
             placeholder="Buscar pacientes, sessões..."
             className="search-input"
             value={query}
@@ -151,9 +152,6 @@ const TopBar = ({ onMenuClick, activeTab = 'visao-geral', onTabChange, onSelectP
             </div>
           )}
         </div>
-        <button className="icon-btn" onClick={onChangePassword} title="Alterar senha">
-          <span className="material-symbols-outlined">lock_reset</span>
-        </button>
       </div>
     </header>
   );

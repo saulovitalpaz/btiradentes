@@ -13,6 +13,10 @@ export const BODY_ZONES = [
 
 const CANINE_ANATOMY = {
   label: 'Canino',
+  images: {
+    lateral: '/anatomy/canine-lateral.png',
+    superior: '/anatomy/canine-superior.png',
+  },
   body: [
     'M215 140 C245 111 304 105 365 116 C421 126 469 149 496 177 C508 190 503 210 485 222 C456 242 402 252 338 249 C282 247 236 229 213 202 C198 185 198 157 215 140Z',
     'M207 145 C190 131 177 109 171 88 C192 95 213 112 231 137 C228 158 220 174 207 184 C194 179 187 165 187 151Z',
@@ -46,6 +50,10 @@ const CANINE_ANATOMY = {
 
 const FELINE_ANATOMY = {
   label: 'Felino',
+  images: {
+    lateral: '/anatomy/feline-lateral.png',
+    superior: '/anatomy/feline-superior.png',
+  },
   body: [
     'M217 143 C246 116 306 109 365 121 C420 132 465 153 489 178 C500 190 497 207 480 219 C452 239 402 247 344 245 C289 243 243 227 218 203 C203 187 202 158 217 143Z',
     'M211 145 C194 132 180 109 174 82 C197 91 216 112 232 137 C229 158 219 173 207 181 C194 175 188 160 189 147Z',

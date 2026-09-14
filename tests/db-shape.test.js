@@ -21,3 +21,9 @@ test('preserves existing database collections', () => {
 
   assert.deepEqual(normalizeDbShape(db), db);
 });
+
+test('preserves settings while normalizing the database shape', () => {
+  assert.deepEqual(normalizeDbShape({ settings: { 'agenda.availability': '{}' } }).settings, {
+    'agenda.availability': '{}',
+  });
+});

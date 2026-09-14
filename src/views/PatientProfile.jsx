@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchDB, addSession, deletePatient, uploadSessionFile } from '../services/api';
+import { fetchDB, addSession, deletePatient, updatePatient, updateSession, uploadSessionFile } from '../services/api';
 import BodyDiagram from '../components/BodyDiagram';
 import useIsMobile from '../hooks/useIsMobile';
 
@@ -15,7 +15,7 @@ const EXERCICIOS_OPTIONS = [
   'Esteira Subaquática', 'Bola Suíça', 'Sustentação de Peso', 'Alongamento Passivo',
 ];
 
-const PatientProfile = ({ patientId, onBack }) => {
+const PatientProfile = ({ patientId, initialSessionId, onBack }) => {
   const [patient, setPatient] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +35,11 @@ const PatientProfile = ({ patientId, onBack }) => {
   const [bodyRegions, setBodyRegions] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
   const [uploadPreviews, setUploadPreviews] = useState([]);
+  const [proximaSessaoTime, setProximaSessaoTime] = useState('');
+  const [editingSession, setEditingSession] = useState(null);
+  const [editingPatient, setEditingPatient] = useState(false);
+  const [patientForm, setPatientForm] = useState(null);
+  const [feedback, setFeedback] = useState('');
   
   // Future appointments
   const [upcomingAppts, setUpcomingAppts] = useState([]);
@@ -45,11 +50,16 @@ const PatientProfile = ({ patientId, onBack }) => {
       const pt = db.patients.find(p => p.id === patientId);
       if (pt) {
         setPatient(pt);
+        setPatientForm({ name: pt.name || '', species: pt.species || 'Canino', breed: pt.breed || '', age: pt.age || '', tutor: pt.tutor || '', status: pt.status || 'Tratamento Ativo', description: pt.description || '' });
         setPeso(pt.weight || '');
         const ptSessions = db.sessions
           .filter(s => s.patientId === patientId)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setHistory(ptSessions);
+        if (initialSessionId) {
+          const initialSession = ptSessions.find(session => session.id === initialSessionId);
+          if (initialSession) startSessionEdit(initialSession);
+        }
         
         const ptAppts = (db.appointments || [])
           .filter(a => a.patientId === patientId && a.status !== 'Realizado' && new Date(`${a.date}T${a.time}`) >= new Date())
@@ -59,7 +69,7 @@ const PatientProfile = ({ patientId, onBack }) => {
       setLoading(false);
     };
     if (patientId) loadProfile();
-  }, [patientId]);
+  }, [patientId, initialSessionId]);
 
   const handleDelete = async () => {
     if (window.confirm(`Tem certeza que deseja excluir permanentemente o paciente ${patient?.name} e todo o seu histórico? Esta ação não pode ser desfeita.`)) {
@@ -87,6 +97,69 @@ const PatientProfile = ({ patientId, onBack }) => {
   const removeUpload = (idx) => {
     setUploadFiles(prev => prev.filter((_, i) => i !== idx));
     setUploadPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const startSessionEdit = (session) => {
+    setFeedback('');
+    setEditingSession({
+      ...session,
+      painScale: session.painScale ?? 5,
+      mobilidadeScale: session.mobilidadeScale ?? 5,
+      tecnicas: session.tecnicas || [],
+      exercicios: session.exercicios || [],
+      bodyRegions: session.bodyRegions || [],
+      notes: session.notes || '',
+      peso: session.peso ?? '',
+      proximaSessao: session.proximaSessao || '',
+      proximaSessaoTime: session.proximaSessaoTime || '',
+      evolucao: session.evolucao || 'Estável',
+    });
+  };
+
+  const handleUpdateSession = async event => {
+    event.preventDefault();
+    if (!editingSession.notes?.trim()) return;
+    setSaving(true);
+    try {
+      const result = await updateSession(editingSession.id, {
+        type: editingSession.type,
+        title: `${editingSession.type || 'Fisioterapia'} — Dor: ${editingSession.painScale}/10 | Mobilidade: ${editingSession.mobilidadeScale}/10`,
+        notes: editingSession.notes,
+        painScale: Number(editingSession.painScale),
+        mobilidadeScale: Number(editingSession.mobilidadeScale),
+        evolucao: editingSession.evolucao,
+        peso: editingSession.peso,
+        proximaSessao: editingSession.proximaSessao,
+        proximaSessaoTime: editingSession.proximaSessaoTime,
+        bodyRegions: editingSession.bodyRegions,
+        tecnicas: editingSession.tecnicas,
+        exercicios: editingSession.exercicios,
+        tags: [...editingSession.tecnicas, ...editingSession.exercicios],
+      });
+      setHistory(current => current.map(item => item.id === result.session.id ? result.session : item));
+      if (result.patient) { setPatient(result.patient); setPeso(result.patient.weight || editingSession.peso || ''); }
+      setEditingSession(null);
+      setFeedback('Sessão atualizada com sucesso.');
+    } catch (error) {
+      setFeedback(error.message || 'Não foi possível atualizar a sessão.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdatePatient = async event => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      const updated = await updatePatient(patientId, patientForm);
+      setPatient(updated);
+      setEditingPatient(false);
+      setFeedback('Dados do paciente atualizados.');
+    } catch (error) {
+      setFeedback(error.message || 'Não foi possível atualizar o paciente.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const uploadFilesToServer = async (files) => {
@@ -119,31 +192,41 @@ const PatientProfile = ({ patientId, onBack }) => {
       return;
     }
 
-    const newSess = await addSession({
-      patientId,
-      type: sessionType,
-      title: `${sessionType} — Dor: ${painScale}/10 | Mobilidade: ${mobilidadeScale}/10`,
-      notes,
-      tags: [...tecnicas, ...exercicios],
-      tecnicas,
-      exercicios,
-      painScale: Number(painScale),
-      mobilidadeScale: Number(mobilidadeScale),
-      evolucao,
-      peso,
-      proximaSessao,
-      bodyRegions,
-      attachments,
-      date: new Date().toISOString().split('T')[0],
-    });
+    let result;
+    try {
+      result = await addSession({
+        patientId,
+        type: sessionType,
+        title: `${sessionType} — Dor: ${painScale}/10 | Mobilidade: ${mobilidadeScale}/10`,
+        notes,
+        tags: [...tecnicas, ...exercicios],
+        tecnicas,
+        exercicios,
+        painScale: Number(painScale),
+        mobilidadeScale: Number(mobilidadeScale),
+        evolucao,
+        peso,
+        proximaSessao,
+        proximaSessaoTime,
+        bodyRegions,
+        attachments,
+        date: new Date().toISOString().split('T')[0],
+      });
+    } catch (error) {
+      setSaving(false);
+      setFeedback(error.message || 'Não foi possível registrar a sessão.');
+      return;
+    }
 
+    const newSess = result.session;
     setHistory([newSess, ...history]);
+    if (result.patient) setPatient(result.patient);
     setNotes(''); setPainScale(5); setMobilidadeScale(5);
     setTecnicas([]); setExercicios([]); setEvolucao('Estável');
-    setProximaSessao(''); setBodyRegions([]);
+    setProximaSessao(''); setProximaSessaoTime(''); setBodyRegions([]);
     setUploadFiles([]); setUploadPreviews([]);
     setSaving(false);
-    alert('Sessão registrada com sucesso!');
+    setFeedback(result.nextAppointment ? 'Sessão registrada e próxima sessão adicionada à agenda.' : 'Sessão registrada com sucesso.');
     if (isMobile) setMobileTab('history');
   };
 
@@ -161,6 +244,7 @@ const PatientProfile = ({ patientId, onBack }) => {
       <div className="patient-basic-info">
         <span className="patient-id">ID: {patient.id}</span>
         <h2>{patient.name}</h2>
+        <button type="button" className="btn-secondary compact profile-edit-button" onClick={() => setEditingPatient(true)}><span className="material-symbols-outlined" aria-hidden="true">edit</span>Editar paciente</button>
         <div className="info-cards">
           <div className="info-card"><span className="material-symbols-outlined">category</span><div><p className="meta-label">Raça</p><p className="meta-value">{patient.breed || '—'}</p></div></div>
           {!isMobile && (
@@ -328,7 +412,10 @@ const PatientProfile = ({ patientId, onBack }) => {
         {/* Próxima Sessão */}
         <div className="form-group">
           <label>Próxima sessão agendada</label>
-          <input type="date" className="form-input" value={proximaSessao} onChange={e => setProximaSessao(e.target.value)} />
+          <div className="form-row">
+            <input type="date" className="form-input" value={proximaSessao} onChange={e => setProximaSessao(e.target.value)} />
+            <input type="time" className="form-input" value={proximaSessaoTime} onChange={e => setProximaSessaoTime(e.target.value)} aria-label="Horário da próxima sessão" />
+          </div>
         </div>
 
         {/* Upload de Imagens */}
@@ -366,8 +453,9 @@ const PatientProfile = ({ patientId, onBack }) => {
         </div>
 
         <button type="submit" className="btn-submit" disabled={saving} style={{cursor: saving ? 'not-allowed' : 'pointer'}}>
-          {saving ? 'Salvando...' : 'Finalizar e Salvar Sessão'}
+          {saving ? 'Salvando…' : 'Finalizar e Salvar Sessão'}
         </button>
+        {feedback && <p className="form-success" role="status" aria-live="polite">{feedback}</p>}
       </form>
     </aside>
   );
@@ -378,11 +466,12 @@ const PatientProfile = ({ patientId, onBack }) => {
       {history.length === 0 ? (
         <p style={{color: 'var(--on-surface-variant)', fontSize: '0.9rem', padding: '16px 0'}}>Nenhuma sessão registrada.</p>
       ) : history.map((item, i) => (
-        <div key={i} className="patient-row" style={{flexDirection: 'column', alignItems: 'flex-start', marginTop: '16px', backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: 'var(--radius-default)'}}>
+        <div key={item.id || i} className="patient-row history-session-card" role="button" tabIndex={0} onClick={() => startSessionEdit(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); startSessionEdit(item); } }} style={{flexDirection: 'column', alignItems: 'flex-start', marginTop: '16px', backgroundColor: 'var(--surface-container-low)', padding: '16px', borderRadius: 'var(--radius-default)'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '8px'}}>
             <span className="status-tag status-active">{item.type} — {new Date(item.createdAt).toLocaleDateString('pt-BR')}</span>
             {item.evolucao && <span className={`status-tag ${item.evolucao === 'Melhora' ? 'status-active' : item.evolucao === 'Piora' ? 'status-recovery' : 'status-maintenance'}`}>{item.evolucao}</span>}
           </div>
+          <button type="button" className="btn-secondary compact history-edit-button" onClick={event => { event.stopPropagation(); startSessionEdit(item); }}>Editar sessão</button>
           <h4 style={{marginTop: '8px'}}>{item.title}</h4>
           <p style={{fontSize: '0.875rem', color: 'var(--on-surface-variant)', marginTop: '4px'}}>{item.notes}</p>
           
@@ -402,7 +491,7 @@ const PatientProfile = ({ patientId, onBack }) => {
           {(item.attachments || []).length > 0 && (
             <div className="attachments-gallery" style={{ marginTop: '12px' }}>
               {item.attachments.map((att, ai) => (
-                <a key={ai} href={att.url} target="_blank" rel="noreferrer" className="attachment-thumb">
+                <a key={ai} href={att.url} target="_blank" rel="noreferrer" className="attachment-thumb" onClick={event => event.stopPropagation()}>
                   {att.type?.startsWith('image/') ? <img src={att.url} alt={att.name} /> : <span className="material-symbols-outlined">description</span>}
                 </a>
               ))}
@@ -413,8 +502,44 @@ const PatientProfile = ({ patientId, onBack }) => {
     </div>
   );
 
+  const renderPatientEditModal = () => editingPatient && patientForm && (
+    <div className="modal-overlay" onClick={() => setEditingPatient(false)}>
+      <div className="modal-content mobile-modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="edit-patient-title" onClick={event => event.stopPropagation()}>
+        <div className="modal-header"><h3 id="edit-patient-title">Editar paciente</h3><button type="button" className="icon-btn" aria-label="Fechar janela" onClick={() => setEditingPatient(false)}><span className="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+        <form className="calendar-form" onSubmit={handleUpdatePatient}>
+          <div className="form-group"><label htmlFor="edit-patient-name">Nome do paciente *</label><input id="edit-patient-name" className="form-input" name="name" value={patientForm.name} onChange={event => setPatientForm({ ...patientForm, name: event.target.value })} required /></div>
+          <div className="form-row"><div className="form-group"><label htmlFor="edit-patient-species">Espécie</label><select id="edit-patient-species" className="form-select" name="species" value={patientForm.species} onChange={event => setPatientForm({ ...patientForm, species: event.target.value })}><option>Canino</option><option>Felino</option><option>Outro</option></select></div><div className="form-group"><label htmlFor="edit-patient-age">Idade</label><input id="edit-patient-age" className="form-input" name="age" value={patientForm.age} onChange={event => setPatientForm({ ...patientForm, age: event.target.value })} /></div></div>
+          <div className="form-row"><div className="form-group"><label htmlFor="edit-patient-breed">Raça</label><input id="edit-patient-breed" className="form-input" name="breed" value={patientForm.breed} onChange={event => setPatientForm({ ...patientForm, breed: event.target.value })} /></div><div className="form-group"><label htmlFor="edit-patient-tutor">Tutor *</label><input id="edit-patient-tutor" className="form-input" name="tutor" value={patientForm.tutor} onChange={event => setPatientForm({ ...patientForm, tutor: event.target.value })} required /></div></div>
+          <div className="form-group"><label htmlFor="edit-patient-status">Status</label><select id="edit-patient-status" className="form-select" name="status" value={patientForm.status} onChange={event => setPatientForm({ ...patientForm, status: event.target.value })}><option>Tratamento Ativo</option><option>Recuperação Pós-Op</option><option>Manutenção</option><option>Alta</option></select></div>
+          <div className="form-group"><label htmlFor="edit-patient-description">Descrição</label><textarea id="edit-patient-description" className="form-textarea" name="description" rows="3" value={patientForm.description} onChange={event => setPatientForm({ ...patientForm, description: event.target.value })} /></div>
+          <div className="modal-actions"><button type="button" className="btn-secondary" onClick={() => setEditingPatient(false)}>Cancelar</button><button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Salvando…' : 'Salvar paciente'}</button></div>
+        </form>
+      </div>
+    </div>
+  );
+
+  const renderSessionEditModal = () => editingSession && (
+    <div className="modal-overlay" onClick={() => setEditingSession(null)}>
+      <div className="modal-content mobile-modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="edit-session-title" onClick={event => event.stopPropagation()}>
+        <div className="modal-header"><h3 id="edit-session-title">Editar sessão</h3><button type="button" className="icon-btn" aria-label="Fechar janela" onClick={() => setEditingSession(null)}><span className="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+        <form className="calendar-form session-edit-form" onSubmit={handleUpdateSession}>
+          <div className="form-row"><div className="form-group"><label htmlFor="edit-session-type">Tipo de sessão</label><select id="edit-session-type" className="form-select" value={editingSession.type || 'Fisioterapia'} onChange={event => setEditingSession({ ...editingSession, type: event.target.value })}><option>Fisioterapia</option><option>Acupuntura</option><option>Avaliação Inicial</option><option>Reavaliação</option><option>Hidroterapia</option><option>Pós-Operatório</option></select></div><div className="form-group"><label htmlFor="edit-session-weight">Peso atual (kg)</label><input id="edit-session-weight" type="number" step="0.1" className="form-input" value={editingSession.peso} onChange={event => setEditingSession({ ...editingSession, peso: event.target.value })} /></div></div>
+          <div className="form-group"><label>Mapa anatômico — regiões corporais</label><BodyDiagram species={patient.species} selectedZones={editingSession.bodyRegions} onChange={bodyRegions => setEditingSession({ ...editingSession, bodyRegions })} /></div>
+          <div className="form-row"><div className="form-group"><label htmlFor="edit-session-pain">Escala de dor: <strong>{editingSession.painScale}/10</strong></label><input id="edit-session-pain" type="range" min="0" max="10" value={editingSession.painScale} onChange={event => setEditingSession({ ...editingSession, painScale: event.target.value })} className="form-range" /></div><div className="form-group"><label htmlFor="edit-session-mobility">Mobilidade: <strong>{editingSession.mobilidadeScale}/10</strong></label><input id="edit-session-mobility" type="range" min="0" max="10" value={editingSession.mobilidadeScale} onChange={event => setEditingSession({ ...editingSession, mobilidadeScale: event.target.value })} className="form-range" /></div></div>
+          <div className="form-group"><label>Evolução</label><div className="toggle-group">{['Melhora', 'Estável', 'Piora'].map(option => <button type="button" key={option} className={`toggle-btn ${editingSession.evolucao === option ? 'active' : ''}`} onClick={() => setEditingSession({ ...editingSession, evolucao: option })}>{option}</button>)}</div></div>
+          <div className="form-group"><label>Técnicas aplicadas</label><div className="choice-chips">{TECNICAS_OPTIONS.map(option => <button type="button" key={option} className={`toggle-btn ${editingSession.tecnicas.includes(option) ? 'active' : ''}`} onClick={() => setEditingSession({ ...editingSession, tecnicas: editingSession.tecnicas.includes(option) ? editingSession.tecnicas.filter(item => item !== option) : [...editingSession.tecnicas, option] })}>{option}</button>)}</div></div>
+          <div className="form-group"><label>Exercícios realizados</label><div className="choice-chips">{EXERCICIOS_OPTIONS.map(option => <button type="button" key={option} className={`toggle-btn ${editingSession.exercicios.includes(option) ? 'active' : ''}`} onClick={() => setEditingSession({ ...editingSession, exercicios: editingSession.exercicios.includes(option) ? editingSession.exercicios.filter(item => item !== option) : [...editingSession.exercicios, option] })}>{option}</button>)}</div></div>
+          <div className="form-group"><label htmlFor="edit-session-notes">Observações e evolução clínica *</label><textarea id="edit-session-notes" className="form-textarea" rows="5" value={editingSession.notes} onChange={event => setEditingSession({ ...editingSession, notes: event.target.value })} required /></div>
+          <div className="form-row"><div className="form-group"><label htmlFor="edit-session-return">Próxima sessão</label><input id="edit-session-return" type="date" className="form-input" value={editingSession.proximaSessao} onChange={event => setEditingSession({ ...editingSession, proximaSessao: event.target.value })} /></div><div className="form-group"><label htmlFor="edit-session-return-time">Horário</label><input id="edit-session-return-time" type="time" className="form-input" value={editingSession.proximaSessaoTime} onChange={event => setEditingSession({ ...editingSession, proximaSessaoTime: event.target.value })} /></div></div>
+          <div className="modal-actions"><button type="button" className="btn-secondary" onClick={() => setEditingSession(null)}>Cancelar</button><button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Salvando…' : 'Salvar sessão'}</button></div>
+        </form>
+      </div>
+    </div>
+  );
+
   if (isMobile) {
     return (
+      <>
       <div className="patient-profile mobile-view">
         <div style={{ padding: '0 4px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button className="icon-btn" onClick={onBack}><span className="material-symbols-outlined">arrow_back</span></button>
@@ -456,10 +581,14 @@ const PatientProfile = ({ patientId, onBack }) => {
           {mobileTab === 'new' && renderSessionForm()}
         </div>
       </div>
+      {renderPatientEditModal()}
+      {renderSessionEditModal()}
+      </>
     );
   }
 
   return (
+    <>
     <div className="patient-profile desktop-view">
       {renderProfileHeader()}
       <section className="profile-content">
@@ -470,6 +599,9 @@ const PatientProfile = ({ patientId, onBack }) => {
         {renderSessionForm()}
       </section>
     </div>
+    {renderPatientEditModal()}
+    {renderSessionEditModal()}
+    </>
   );
 };
 

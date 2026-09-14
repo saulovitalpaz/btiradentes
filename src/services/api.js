@@ -2,6 +2,10 @@ const API_URL = '/api/data';
 const UPLOAD_URL = '/api/upload';
 const AUTH_URL = '/api/auth';
 const SEARCH_URL = '/api/search';
+const PATIENTS_URL = '/api/patients';
+const SESSIONS_URL = '/api/sessions';
+const APPOINTMENTS_URL = '/api/appointments';
+const AVAILABILITY_URL = '/api/settings/availability';
 
 const requestJson = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -95,71 +99,72 @@ export const uploadSessionFile = async (file) => {
 };
 
 export const addPatient = async (patient) => {
-  const db = await fetchDB();
-  const newPatient = {
-    ...patient,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString()
-  };
-  db.patients.push(newPatient);
-  await saveDB(db);
-  return newPatient;
+  const result = await requestJson(PATIENTS_URL, {
+    method: 'POST',
+    body: JSON.stringify(patient),
+  });
+  return result.patient;
+};
+
+export const updatePatient = async (id, updates) => {
+  const result = await requestJson(`${PATIENTS_URL}/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+  return result.patient;
 };
 
 export const addSession = async (session) => {
-  const db = await fetchDB();
-  const newSession = {
-    ...session,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString()
-  };
-  db.sessions.push(newSession);
-  
-  // Update patient lastSession date
-  const patientIndex = db.patients.findIndex(p => p.id === session.patientId);
-  if (patientIndex !== -1) {
-    db.patients[patientIndex].lastSession = new Date().toISOString();
-  }
-  
-  await saveDB(db);
-  return newSession;
+  const result = await requestJson(SESSIONS_URL, {
+    method: 'POST',
+    body: JSON.stringify(session),
+  });
+  return result;
+};
+
+export const updateSession = async (id, updates) => {
+  const result = await requestJson(`${SESSIONS_URL}/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+  return result;
 };
 
 export const addAppointment = async (appt) => {
-  const db = await fetchDB();
-  const newAppt = {
-    ...appt,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString()
-  };
-  db.appointments.push(newAppt);
-  await saveDB(db);
-  return newAppt;
+  const endpoint = appt.recurrence?.total > 1 ? `${APPOINTMENTS_URL}/series` : APPOINTMENTS_URL;
+  return requestJson(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(appt),
+  });
 };
 
 export const updateAppointment = async (id, updates) => {
-  const db = await fetchDB();
-  const index = db.appointments.findIndex(a => a.id === id);
-  if (index !== -1) {
-    db.appointments[index] = { ...db.appointments[index], ...updates, updatedAt: new Date().toISOString() };
-    await saveDB(db);
-    return db.appointments[index];
-  }
-  return null;
+  const result = await requestJson(`${APPOINTMENTS_URL}/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+  return result.appointment;
 };
 
 export const deleteAppointment = async (id) => {
-  const db = await fetchDB();
-  db.appointments = db.appointments.filter(a => a.id !== id);
-  await saveDB(db);
+  await requestJson(`${APPOINTMENTS_URL}/${id}`, { method: 'DELETE' });
   return true;
 };
 
 export const deletePatient = async (id) => {
-  const db = await fetchDB();
-  db.patients = db.patients.filter(p => p.id !== id);
-  db.sessions = db.sessions.filter(s => s.patientId !== id);
-  db.appointments = db.appointments.filter(a => a.patientId !== id);
-  await saveDB(db);
+  await requestJson(`${PATIENTS_URL}/${id}`, { method: 'DELETE' });
   return true;
+};
+
+export const fetchAvailability = async () => {
+  const result = await requestJson(AVAILABILITY_URL);
+  return result.availability;
+};
+
+export const saveAvailability = async (availability) => {
+  const result = await requestJson(AVAILABILITY_URL, {
+    method: 'PUT',
+    body: JSON.stringify(availability),
+  });
+  return result.availability;
 };

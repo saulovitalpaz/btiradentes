@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDB } from '../services/api';
 
-const SessionsManager = ({ onSelectPatient, filterToday = false }) => {
+const SessionsManager = ({ onSelectPatient, onSelectSession, filterToday = false }) => {
   const getToday = () => new Date().toISOString().split('T')[0];
   const [db, setDb] = useState({ patients: [], sessions: [] });
   const [loading, setLoading] = useState(true);
@@ -96,7 +96,11 @@ const SessionsManager = ({ onSelectPatient, filterToday = false }) => {
               <div
                 key={i}
                 className="session-item"
-                onClick={() => onSelectPatient && onSelectPatient(session.patientId)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Abrir sessão de ${patient.name}`}
+                onClick={() => onSelectSession ? onSelectSession(session.patientId, session.id) : onSelectPatient && onSelectPatient(session.patientId)}
+                onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectSession ? onSelectSession(session.patientId, session.id) : onSelectPatient && onSelectPatient(session.patientId); } }}
                 style={{cursor: 'pointer'}}
               >
                 <div className="session-date-col">

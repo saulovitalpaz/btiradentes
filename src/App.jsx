@@ -7,6 +7,7 @@ import PatientList from './views/PatientList';
 import PatientProfile from './views/PatientProfile';
 import SessionsManager from './views/SessionsManager';
 import Calendar from './views/Calendar';
+import Settings from './views/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -14,10 +15,18 @@ function App() {
   const { logout } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [topbarTab, setTopbarTab] = useState('visao-geral');
 
   const handlePatientSelect = (id) => {
     setSelectedPatientId(id);
+    setSelectedSessionId(null);
+    setCurrentView('patient-profile');
+  };
+
+  const handleSessionSelect = (patientId, sessionId) => {
+    setSelectedPatientId(patientId);
+    setSelectedSessionId(sessionId);
     setCurrentView('patient-profile');
   };
 
@@ -35,7 +44,7 @@ function App() {
 
   const renderContent = () => {
     if (currentView === 'patient-profile') {
-      return <PatientProfile patientId={selectedPatientId} onBack={() => setCurrentView('patients')} />;
+      return <PatientProfile patientId={selectedPatientId} initialSessionId={selectedSessionId} onBack={() => setCurrentView('patients')} />;
     }
 
     switch (currentView) {
@@ -44,9 +53,13 @@ function App() {
       case 'patients':
         return <PatientList onSelectPatient={handlePatientSelect} />;
       case 'sessions':
-        return <SessionsManager onSelectPatient={handlePatientSelect} filterToday={topbarTab === 'hoje'} />;
+        return <SessionsManager onSelectPatient={handlePatientSelect} onSelectSession={handleSessionSelect} filterToday={topbarTab === 'hoje'} />;
       case 'calendar':
         return <Calendar onSelectPatient={handlePatientSelect} />;
+      case 'settings-password':
+        return <Settings section="password" onSectionChange={setCurrentView} />;
+      case 'settings-availability':
+        return <Settings section="availability" onSectionChange={setCurrentView} />;
       default:
         return <Dashboard onSelectPatient={handlePatientSelect} onNavigate={setCurrentView} />;
     }

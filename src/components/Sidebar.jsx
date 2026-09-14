@@ -6,6 +6,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, isOpen, onClose, onSelectPa
   const [patients, setPatients] = useState([]);
   const [selectedPt, setSelectedPt] = useState('');
   const [loadingPts, setLoadingPts] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(activeTab.startsWith('settings'));
 
   const navItems = [
     { id: 'dashboard', label: 'Início', icon: 'dashboard' },
@@ -44,8 +45,8 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, isOpen, onClose, onSelectPa
             <img src="/logo.png" alt="Dra. Brenda Tiradentes" className="sidebar-logo-img" />
             <p>Fisioterapia Vet</p>
           </div>
-          <button className="icon-btn close-btn" onClick={onClose}>
-            <span className="material-symbols-outlined">close</span>
+          <button type="button" className="icon-btn close-btn" aria-label="Fechar menu" onClick={onClose}>
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -61,21 +62,32 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, isOpen, onClose, onSelectPa
                 onClose && onClose();
               }}
             >
-              <span className="material-symbols-outlined">{item.icon}</span>
+              <span className="material-symbols-outlined" aria-hidden="true">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
             </a>
           ))}
+          <div className={`sidebar-settings ${activeTab.startsWith('settings') ? 'active' : ''}`}>
+            <button type="button" className="nav-item sidebar-settings-toggle" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(open => !open)}>
+              <span className="material-symbols-outlined" aria-hidden="true">settings</span>
+              <span className="nav-label">Configurações</span>
+              <span className="material-symbols-outlined settings-chevron" aria-hidden="true">{settingsOpen ? 'expand_less' : 'expand_more'}</span>
+            </button>
+            {settingsOpen && <div className="sidebar-subnav">
+              <a href="#settings-password" className={`sidebar-subnav-item ${activeTab === 'settings-password' ? 'active' : ''}`} onClick={event => { event.preventDefault(); onTabChange('settings-password'); }}>Senha</a>
+              <a href="#settings-availability" className={`sidebar-subnav-item ${activeTab === 'settings-availability' ? 'active' : ''}`} onClick={event => { event.preventDefault(); onTabChange('settings-availability'); }}>Horários de atendimento</a>
+            </div>}
+          </div>
         </nav>
 
         <div className="sidebar-footer">
           <button className="btn-new-session" onClick={handleNewSessionClick}>
-            <span className="material-symbols-outlined">add_circle</span>
+            <span className="material-symbols-outlined" aria-hidden="true">add_circle</span>
             <span>Nova Sessão</span>
           </button>
 
           <div className="sidebar-actions">
             <a href="#logout" className="action-item" onClick={(e) => { e.preventDefault(); onLogout && onLogout(); }}>
-              <span className="material-symbols-outlined">logout</span>
+              <span className="material-symbols-outlined" aria-hidden="true">logout</span>
               <span>Sair</span>
             </a>
           </div>
@@ -101,8 +113,8 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, isOpen, onClose, onSelectPa
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Nova Sessão Rápida</h3>
-              <button className="icon-btn" onClick={() => setShowQuickModal(false)}>
-                <span className="material-symbols-outlined">close</span>
+              <button type="button" className="icon-btn" aria-label="Fechar janela" onClick={() => setShowQuickModal(false)}>
+                <span className="material-symbols-outlined" aria-hidden="true">close</span>
               </button>
             </div>
             {loadingPts ? (

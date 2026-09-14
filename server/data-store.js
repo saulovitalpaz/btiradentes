@@ -5,6 +5,7 @@ export const normalizeDbShape = (db = {}) => ({
   patients: Array.isArray(db.patients) ? db.patients : [],
   sessions: Array.isArray(db.sessions) ? db.sessions : [],
   appointments: Array.isArray(db.appointments) ? db.appointments : [],
+  ...(db.settings && typeof db.settings === 'object' ? { settings: db.settings } : {}),
 });
 
 export const createDataStore = ({ databaseUrl, fallbackFile }) => {
