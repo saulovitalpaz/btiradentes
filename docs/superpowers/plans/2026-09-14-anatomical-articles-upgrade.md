@@ -212,6 +212,7 @@ git commit -m "feat: add species-specific anatomical SVGs"
 
 **Files:**
 - Modify: `src/App.css`
+- Modify: `src/views/Dashboard.jsx`
 
 **Interfaces:**
 - Consumes the existing design tokens and class names from Tasks 2 and 3.
@@ -225,16 +226,20 @@ Give `.body-diagram-wrapper` a solid outline, layered surface, and subtle shadow
 
 Set interactive SVG groups to use `touch-action: manipulation` through the SVG container, keep chips at a comfortable minimum height, and reduce only spacing—not readability—below the existing mobile breakpoint. Ensure the anatomy stays within its container without horizontal scrolling.
 
-- [ ] **Step 3: Run the final targeted verification for styles.**
+- [ ] **Step 3: Use semantic buttons for dashboard appointment cards.**
+
+Change the four clickable `.appointment-item` elements in `src/views/Dashboard.jsx` from `<div>` to `<button type="button">`, preserving their child layout, click handlers and per-item visual styles. Add an accessible label identifying whether the action opens the patient's appointment or history. Reset button typography and alignment in CSS, and add a visible `:focus-visible` outline.
+
+- [ ] **Step 4: Run the final targeted verification for styles.**
 
 Run: `npm run lint; npm run build`
 
 Expected: both commands exit 0 and Vite produces `dist` successfully.
 
-- [ ] **Step 4: Commit the visual refinement task.**
+- [ ] **Step 5: Commit the visual refinement task.**
 
 ```bash
-git add src/App.css
+git add src/App.css src/views/Dashboard.jsx
 git commit -m "style: refine dashboard cards and anatomy controls"
 ```
 
