@@ -3031,3 +3031,233 @@
     width: 100%;
   }
 }
+
+/* === Clinical articles: progressive disclosure === */
+.dynamic-insight {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.dynamic-insight .insight-header {
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  text-transform: none;
+}
+
+.dynamic-insight .insight-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.dynamic-insight .insight-title h3 {
+  margin: 0;
+  color: var(--on-surface);
+  font-size: 1rem;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.insight-kicker {
+  margin-top: 3px;
+  color: var(--on-surface-variant);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.articles-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.articles-toggle:hover {
+  background: var(--surface-container-low);
+  border-color: var(--primary);
+}
+
+.articles-toggle:focus-visible,
+.article-link:focus-visible {
+  outline: 3px solid rgba(109, 94, 0, 0.28);
+  outline-offset: 3px;
+}
+
+.dynamic-insight .insight-description {
+  margin-bottom: 14px;
+  color: var(--on-surface-variant);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.articles-list {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.articles-list.compact {
+  gap: 2px;
+}
+
+.articles-list.expanded {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.article-compact,
+.article-link {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  border-radius: var(--radius-default);
+}
+
+.article-compact {
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+}
+
+.article-link {
+  padding: 11px 12px;
+  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.article-link:hover {
+  background: var(--surface-container-low);
+  border-color: var(--primary);
+  box-shadow: 0 7px 16px rgba(54, 50, 33, 0.09);
+  transform: translateY(-1px);
+}
+
+.article-link:active {
+  box-shadow: 0 3px 8px rgba(54, 50, 33, 0.08);
+  transform: translateY(0);
+}
+
+.article-index {
+  flex: 0 0 22px;
+  color: var(--primary);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.article-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.article-title {
+  margin: 0;
+  overflow: hidden;
+  color: var(--on-surface);
+  font-size: 0.81rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.articles-list.compact .article-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.article-meta {
+  display: block;
+  margin-top: 5px;
+  overflow: hidden;
+  color: var(--on-surface-variant);
+  font-size: 0.67rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-language {
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  border-radius: var(--radius-full);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-size: 0.6rem;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.article-external {
+  flex: 0 0 auto;
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.articles-status {
+  padding: 12px 0;
+  color: var(--on-surface-variant);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.dynamic-insight .insight-footer {
+  gap: 12px;
+  margin-top: auto;
+}
+
+.dynamic-insight .source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-count {
+  flex: 0 0 auto;
+  color: var(--primary);
+  font-size: 0.66rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .articles-list.expanded {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-link {
+    transform: none;
+    transition: none;
+  }
+}
