@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   ANIMAL_SVG_BY_SPECIES,
+  BODY_ZONE_HOTSPOTS,
   BODY_ZONES,
   normalizeSpecies,
 } from './bodyDiagramData';
@@ -9,18 +10,13 @@ const BodyDiagram = ({ selectedZones = [], onChange, species }) => {
   const normalizedSpecies = normalizeSpecies(species);
   const anatomy = ANIMAL_SVG_BY_SPECIES[normalizedSpecies];
   const [viewMode, setViewMode] = useState('lateral');
+  const hotspots = BODY_ZONE_HOTSPOTS[viewMode];
 
   const toggle = (id) => {
     const nextZones = selectedZones.includes(id)
       ? selectedZones.filter(zoneId => zoneId !== id)
       : [...selectedZones, id];
     onChange(nextZones);
-  };
-
-  const handleZoneKeyDown = (event, id) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    toggle(id);
   };
 
   return (
@@ -37,42 +33,44 @@ const BodyDiagram = ({ selectedZones = [], onChange, species }) => {
       </div>
       <p className="body-diagram-hint">
         <span className="material-symbols-outlined" aria-hidden="true">touch_app</span>
-        Selecione as regiões corporais afetadas ou tratadas.
+        Selecione diretamente na imagem as regiões afetadas ou tratadas.
       </p>
       <div className="body-diagram-container">
-        <svg
-          viewBox="0 0 620 340"
-          xmlns="http://www.w3.org/2000/svg"
-          className="body-diagram-svg"
-          role="img"
-          aria-labelledby="body-diagram-title body-diagram-description"
-        >
-          <title id="body-diagram-title">Mapa anatômico veterinário — {anatomy.label}</title>
-          <desc id="body-diagram-description">Imagem realista em vista {viewMode === 'lateral' ? 'lateral' : 'superior'} do paciente. Use Tab e Enter ou Espaço para selecionar uma região.</desc>
-          <image href={anatomy.images[viewMode]} x="0" y="0" width="620" height="340" preserveAspectRatio="xMidYMid meet" role="img" aria-label={`${anatomy.label}, vista ${viewMode === 'lateral' ? 'lateral' : 'superior'}`} />
-
-          {BODY_ZONES.map(zone => {
-            const selected = selectedZones.includes(zone.id);
-            return (
-              <g
-                key={zone.id}
-                className="body-zone-target"
-                role="button"
-                tabIndex={0}
-                aria-label={`${zone.label} — ${anatomy.label}`}
-                aria-pressed={selected}
-                onClick={() => toggle(zone.id)}
-                onKeyDown={event => handleZoneKeyDown(event, zone.id)}
-              >
-                <path
-                  d={anatomy.zones[zone.id]}
-                  className={`body-zone ${selected ? 'selected' : ''}`}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </g>
-            );
-          })}
-        </svg>
+        <div className="body-diagram-image-map">
+          <img
+            src={anatomy.images[viewMode]}
+            alt={`${anatomy.label}, vista ${viewMode === 'lateral' ? 'lateral' : 'superior'}`}
+            width="1536"
+            height="1024"
+            className="body-diagram-image"
+            loading="lazy"
+            decoding="async"
+          />
+          <div className="body-diagram-hotspots" role="group" aria-label={`Regiões do paciente ${anatomy.label}`}>
+            {hotspots.map(hotspot => {
+              const zone = BODY_ZONES.find(item => item.id === hotspot.id);
+              const selected = selectedZones.includes(hotspot.id);
+              return (
+                <button
+                  key={hotspot.id}
+                  type="button"
+                  className={`body-zone-hotspot ${selected ? 'selected' : ''}`}
+                  style={{
+                    left: `${hotspot.left}%`,
+                    top: `${hotspot.top}%`,
+                    width: `${hotspot.width}%`,
+                    height: `${hotspot.height}%`,
+                  }}
+                  aria-label={`${zone.label} — ${anatomy.label}`}
+                  aria-pressed={selected}
+                  onClick={() => toggle(hotspot.id)}
+                >
+                  {selected && <span className="body-zone-hotspot-marker" aria-hidden="true">✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="body-diagram-chips" aria-label="Regiões anatômicas">
           {BODY_ZONES.map(zone => {

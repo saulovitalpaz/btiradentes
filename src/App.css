@@ -3381,6 +3381,75 @@
   }
 }
 
+/* Direct selection over the generated species photograph. No geometric body overlay. */
+.body-diagram-image-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: var(--radius-default);
+  background: #191512;
+  touch-action: manipulation;
+}
+
+.body-diagram-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.body-diagram-hotspots {
+  position: absolute;
+  inset: 0;
+}
+
+.body-zone-hotspot {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.body-zone-hotspot:hover .body-zone-hotspot-marker,
+.body-zone-hotspot:focus-visible .body-zone-hotspot-marker,
+.body-zone-hotspot.selected .body-zone-hotspot-marker {
+  transform: scale(1.08);
+}
+
+.body-zone-hotspot:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: -3px;
+}
+
+.body-zone-hotspot-marker {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.34);
+  transition: transform var(--transition-fast);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body-zone-hotspot-marker {
+    transition: none;
+  }
+}
+
 .appointment-item {
   width: 100%;
   border: var(--border-subtle);
