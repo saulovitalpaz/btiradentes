@@ -3261,3 +3261,113 @@
     transition: none;
   }
 }
+
+/* === Species-specific anatomical diagram === */
+.body-diagram-wrapper {
+  border-style: solid;
+  background: var(--surface-container-lowest);
+  box-shadow: 0 5px 16px rgba(54, 50, 33, 0.07);
+}
+
+.body-diagram-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.body-diagram-title {
+  color: var(--on-surface);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.body-diagram-species {
+  display: inline-block;
+  margin-top: 2px;
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.body-diagram-heading-icon {
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.body-diagram-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.body-diagram-hint .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.body-diagram-svg {
+  overflow: visible;
+  touch-action: manipulation;
+}
+
+.animal-anatomy {
+  fill: #f1ecdc;
+  stroke: #958762;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.animal-anatomy-body {
+  stroke-width: 2.2;
+}
+
+.animal-anatomy-accent {
+  fill: none;
+  stroke: #c1b58e;
+  stroke-width: 1.5;
+}
+
+.body-zone-target {
+  cursor: pointer;
+  outline: none;
+}
+
+.body-zone {
+  fill: rgba(109, 94, 0, 0.06);
+  stroke: rgba(109, 94, 0, 0.34);
+  stroke-width: 1.5;
+  transition: fill var(--transition-fast), stroke var(--transition-fast), filter var(--transition-fast);
+}
+
+.body-zone-target:hover .body-zone,
+.body-zone-target:focus-visible .body-zone {
+  fill: rgba(255, 219, 44, 0.24);
+  stroke: var(--primary);
+}
+
+.body-zone-target:focus-visible .body-zone {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 3px rgba(109, 94, 0, 0.32));
+}
+
+.body-zone.selected {
+  fill: rgba(255, 219, 44, 0.48);
+  stroke: var(--primary);
+  stroke-dasharray: 4 2;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 4px 8px rgba(109, 94, 0, 0.2));
+}
+
+.body-diagram-chips .toggle-btn {
+  min-height: 36px;
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body-zone {
+    transition: none;
+  }
+}

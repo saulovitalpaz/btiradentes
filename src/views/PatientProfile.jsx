@@ -263,11 +263,11 @@ const PatientProfile = ({ patientId, onBack }) => {
           </select>
         </div>
 
-        {/* Cachorrograma */}
+        {/* Mapa anatômico */}
         <div className="form-group">
-          <label>Cachorrograma — Regiões Corporais</label>
+          <label>Mapa anatômico — Regiões corporais</label>
           <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-            <BodyDiagram selectedZones={bodyRegions} onChange={setBodyRegions} />
+            <BodyDiagram species={patient.species} selectedZones={bodyRegions} onChange={setBodyRegions} />
           </div>
         </div>
 
