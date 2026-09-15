@@ -5,7 +5,7 @@ import {
   PORTUGUESE_ARTICLE_TARGET,
   buildPubMedQueries,
   mapArticleSummary,
-  mergeArticleIds,
+  selectArticlesByLanguage,
 } from '../src/components/clinicalInsightsData.js';
 
 test('builds approved PubMed queries with a Portuguese priority query', () => {
@@ -18,10 +18,13 @@ test('builds approved PubMed queries with a Portuguese priority query', () => {
   assert.equal(queries.complementary.retmax, ARTICLE_LIMIT);
 });
 
-test('merges unique Portuguese-first PubMed ids up to six results', () => {
-  const ids = mergeArticleIds(['1', '2', '3', '4'], ['4', '5', '6', '7']);
+test('selects three articles per language and keeps the translated display title', () => {
+  const articles = [
+    ...['1', '2', '3', '4'].map(id => ({ id, language: 'Português' })),
+    ...['5', '6', '7', '8'].map(id => ({ id, language: 'Outro idioma' })),
+  ];
 
-  assert.deepEqual(ids, ['1', '2', '3', '4', '5', '6']);
+  assert.deepEqual(selectArticlesByLanguage(articles).map(article => article.id), ['1', '2', '3', '5', '6', '7']);
 });
 
 test('maps PubMed summary data with a visible language label', () => {
@@ -33,6 +36,7 @@ test('maps PubMed summary data with a visible language label', () => {
   }), {
     id: '12',
     title: 'Acupuntura veterinária',
+    displayTitle: 'Acupuntura veterinária',
     journal: 'Revista Veterinária',
     date: '2025',
     language: 'Português',

@@ -3,9 +3,11 @@ import {
   buildPubMedQueries,
   mapArticleSummary,
   mergeArticleIds,
+  selectArticlesByLanguage,
 } from './clinicalInsightsData';
 
 const PUBMED_ENDPOINT = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
+const TRANSLATION_ENDPOINT = 'https://translate.googleapis.com/translate_a/single';
 
 const fetchPubMedIds = async ({ term, retmax }) => {
   const params = new URLSearchParams({
@@ -30,12 +32,33 @@ const fetchPubMedSummaries = async (ids) => {
   return response.json();
 };
 
+const translateTitle = async (title) => {
+  const params = new URLSearchParams({ client: 'gtx', sl: 'auto', tl: 'pt', dt: 't', q: title });
+  const response = await fetch(`${TRANSLATION_ENDPOINT}?${params}`);
+  if (!response.ok) throw new Error('Falha ao traduzir título');
+  const data = await response.json();
+  const translated = data?.[0]?.map(part => part?.[0]).filter(Boolean).join(' ').trim();
+  return translated || title;
+};
+
+const translateArticleTitles = async (articles) => Promise.all(articles.map(async article => {
+  if (article.language === 'Português') return article;
+  try {
+    return { ...article, displayTitle: await translateTitle(article.title) };
+  } catch (error) {
+    console.error('Falha ao traduzir título do artigo', error);
+    return article;
+  }
+}));
+
 const ClinicalInsights = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchArticles = async () => {
       try {
         const queries = buildPubMedQueries();
@@ -50,15 +73,38 @@ const ClinicalInsights = () => {
         const results = ids
           .map(id => mapArticleSummary(id, details.result?.[id]))
           .filter(Boolean);
-        setArticles(results);
+        const selectedArticles = selectArticlesByLanguage(results);
+        const translatedArticles = await translateArticleTitles(selectedArticles);
+        if (!cancelled) setArticles(translatedArticles);
       } catch (error) {
         console.error('Falha ao buscar artigos no PubMed', error);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchArticles();
+
+    let refreshTimer;
+    const scheduleDailyRefresh = () => {
+      const now = new Date();
+      const nextDay = new Date(now);
+      nextDay.setHours(24, 0, 0, 0);
+      refreshTimer = setTimeout(() => {
+        if (!cancelled) {
+          setLoading(true);
+          fetchArticles();
+          scheduleDailyRefresh();
+        }
+      }, nextDay.getTime() - now.getTime());
+    };
+
+    scheduleDailyRefresh();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(refreshTimer);
+    };
   }, []);
 
   return (
@@ -102,7 +148,7 @@ const ClinicalInsights = () => {
               <>
                 <span className="article-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
                 <div className="article-content">
-                  <h4 className="article-title">{article.title}</h4>
+                  <h4 className="article-title">{article.displayTitle || article.title}</h4>
                   {isExpanded && (
                     <span className="article-meta">
                       {article.journal} · {article.date}
